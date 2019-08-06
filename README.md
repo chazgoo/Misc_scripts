@@ -1,6 +1,6 @@
 ### Miscellanious Scripts
 
-A collection of shorter scripts I've used in various bioinformatic processes and pipelines. A number of these are used in my other (privately held - until published) repositories. I wanted a place to allow free access to my work without compromising any of my resaarch in progress. Here it is. 
+A collection of shorter scripts I've used in various bioinformatic processes and pipelines. A number of these are used in my other (privately held - until published) repositories. I wanted a place to allow free access to my work without compromising any of my research in progress. Here it is. 
 
 fasta_oneline.sh
 seqtk.sh
