@@ -1,0 +1,89 @@
+---
+title: "NFM Formatting"
+output: html_notebook
+---
+
+Here, I'm going to format the new and improved PyRos files - after TW pointed out that the original Rosettas were faulty in terms of assigned OGs:
+
+- omit , blastID, PfamA ID, Type, and NODE columns
+
+- include only common orthogroups
+
+
+```{r}
+OGr_list = "/home/cagood/Dimensions/OrthoFinder/2nd_run/analysis/commonOGs.txt"
+commonOGs = read.table(OGr_list, header=T)
+
+species = c("DC10","DC20","DC30","DC40","DC50","DC60","DC70","DC80")
+
+for (i in 1:8){
+  name = species[i]
+  
+  # Pull the expression data table
+  path = paste0("/home/cagood/Dimensions/Rosettas/",species[i],"_PyRos.csv")
+  NFM = read.csv(file = path)
+  
+  # Remove other uneccessary columns
+  NFM$NODE = NULL
+  NFM$BlastID = NULL
+  NFM$Type = NULL
+  NFM$PfamID = NULL
+  
+  #Include only common OGs
+  NFM = merge(x = NFM, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+  
+  out = NFM
+  
+  write.csv(out, paste0("./NFM_format/",species[i],"_cmmnOGs_NFM.csv"))
+  
+  assign(name, out)
+}
+
+NFM = NULL
+out = NULL
+```
+
+```{r}
+# Make a long table, for shits
+
+#CURRENTLY BROKEN DUE TO REFORMATTED PyRos files
+
+library(tidyverse)
+
+
+DC10_long = DC10 %>% gather(Sample, TPM, -(1:2))
+DC10_long$species = "DC10"
+
+DC20_long = DC20 %>% gather(Sample, TPM, -(1:2))
+DC20_long$species = "DC20"
+
+DC30_long = DC30 %>% gather(Sample, TPM, -(1:2))
+DC30_long$species = "DC30"
+
+DC40_long = DC40 %>% gather(Sample, TPM, -(1:2))
+DC40_long$species = "DC40"
+
+DC50_long = DC50 %>% gather(Sample, TPM, -(1:2))
+DC50_long$species = "DC50"
+
+DC60_long = DC60 %>% gather(Sample, TPM, -(1:2))
+DC60_long$species = "DC60"
+
+DC70_long = DC70 %>% gather(Sample, TPM, -(1:2))
+DC70_long$species = "DC70"
+
+DC80_long = DC80 %>% gather(Sample, TPM, -(1:2))
+DC80_long$species = "DC80"
+
+long = rbind(DC10_long, 
+             DC20_long, 
+             DC30_long,
+             DC40_long,
+             DC50_long,
+             DC60_long,
+             DC70_long,
+             DC80_long)
+
+plot(density(log(long$TPM), na.rm = T))
+plot(density(long$TPM, na.rm = T))
+```

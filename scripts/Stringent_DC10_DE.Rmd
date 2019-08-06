@@ -1,0 +1,247 @@
+---
+title: "Stringent_DC10_DE"
+date: 5.6.19
+author: Charles Goodman
+output: html_notebook
+---
+
+Here, I'm rerunning DE analysis on consecutive pairs of timepoints. Data used are those resulting from my Kallisto run on the 'stringent' reference transcriptomes. A summary of the steps preceding this process may be seen [here](https://github.com/chazgoo/DIMENSIONS/tree/master/Stringent). 
+
+Herein, the flow is basically identical to the process used on my unfiltered data. I modify file paths to point to the stringent values instead.
+
+***
+### *Initialize Packages*
+```{r}
+source("http://bioconductor.org/biocLite.R")
+## Only need to install these packages once... do this from sudo R session in terminal
+# biocLite("devtools")
+# biocLite("pachterlab/sleuth")
+# biocLite("rhdf5")
+# biocLite("shinyapp")
+
+library("dplyr")
+library("sleuth")
+library("rhdf5")
+library("devtools")
+library("shiny")
+library("splines")
+```
+
+### *Analysis of pairwise timepoints*
+Format for each pair of consecutive timepoints.
+
+**Input** = kallisto data location, condition values, output var/filenames  
+**Output** = A local named sleuth_object, and a csv of sleuth_results() values
+
+```{r DC10_pairwise_analysis}
+## DC10 Inputs
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Kallistos/stringent/DC10/")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Kallistos/stringent/DC10",sample_id)
+
+# Construct a metadata table
+metadata = data.frame(
+  condition = c("T0","T3","T5","T6",
+                "T0","T3","T5","T6",
+                "T0","T3","T5","T6"),
+  sample = sample_id,
+  path = as.character(kal_dirs))
+
+metadata = data.frame(lapply(metadata, as.character), stringsAsFactors = FALSE)
+
+metadata = metadata[order(metadata$condition),] # Orders dataframe by condition value
+
+# Subset T1/T3 values
+tp1 = dplyr::select(metadata[1:6,], sample, condition, path)
+tp2 = dplyr::select(metadata[4:9,], sample, condition, path)
+tp3 = dplyr::select(metadata[7:12,], sample, condition, path)
+
+# Construct the sleuth object and fit the models
+so_1 = sleuth_prep(tp1)
+so_2 = sleuth_prep(tp2)
+so_3 = sleuth_prep(tp3)
+
+so_1 = sleuth_fit(so_1, ~condition, 'full')
+so_1 = sleuth_fit(so_1, ~1, 'reduced')
+
+so_2 = sleuth_fit(so_2, ~condition, 'full')
+so_2 = sleuth_fit(so_2, ~1, 'reduced')
+
+so_3 = sleuth_fit(so_3, ~condition, 'full')
+so_3 = sleuth_fit(so_3, ~1, 'reduced')
+
+# Run the LRT on all sets
+so_1 = sleuth_lrt(so_1, 'reduced', 'full')
+so_2 = sleuth_lrt(so_2, 'reduced', 'full')
+so_3 = sleuth_lrt(so_3, 'reduced', 'full')
+
+# Get the results and write the tables
+st_1 = sleuth_results(so_1, 'reduced:full', 'lrt', show_all = TRUE)
+st_2 = sleuth_results(so_2, 'reduced:full', 'lrt', show_all = TRUE)
+st_3 = sleuth_results(so_3, 'reduced:full', 'lrt', show_all = TRUE)
+
+table(st_1[,"qval"] < 0.1)
+table(st_2[,"qval"] < 0.1)
+table(st_3[,"qval"] < 0.1)
+
+write.csv(st_1, file = "./DC10_pairwise/DC10_tp1_sleuth.csv", row.names = FALSE)
+write.csv(st_2, file = "./DC10_pairwise/DC10_tp2_sleuth.csv", row.names = FALSE)
+write.csv(st_3, file = "./DC10_pairwise/DC10_tp3_sleuth.csv", row.names = FALSE)
+
+#tp1 = NULL
+#tp2 = NULL
+#tp3 = NULL
+```
+
+### *Codex table*
+```{r Codex_gen}
+library(dplyr)
+library(gtools)
+
+pyros_file = "/home/cagood/Dimensions/Rosettas/stringent/DC10_Stringent_PyRos.csv" 
+OGr_list = "/home/cagood/Dimensions/OrthoFinder/unfiltered/2nd_run/analysis/commonOGs.txt"
+
+timecourse = "./timecourse_Outs/DC10_stringent_timecourse"
+timepair1 = "./DC10_pairwise/DC10_tp1_sleuth.csv"
+timepair2 = "./DC10_pairwise/DC10_tp2_sleuth.csv"
+timepair3 = "./DC10_pairwise/DC10_tp3_sleuth.csv"
+
+# Read in files:
+Rosetta = read.csv(pyros_file, header = T)
+sleuth = read.csv(timecourse, header = T)
+commonOGs = read.table(OGr_list, header=T)
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+tp3 = read.csv(timepair3, header=T)
+
+# Formatting sleuth 
+# subset timecourse LRT-derived p and q values - rename 
+sleuth = select(sleuth, target_id, pval, qval)
+colnames(sleuth)[colnames(sleuth)=="pval"] = "sleuth.timecourse_pval"
+colnames(sleuth)[colnames(sleuth)=="qval"] = "sleuth.timecourse_qval"
+
+# subset pairwise timepoint p and q vals from pairwise experiments
+tp1 = select(tp1, target_id, pval, qval)
+colnames(tp1)[colnames(tp1)=="pval"] = "sleuth.tp1_pval"
+colnames(tp1)[colnames(tp1)=="qval"] = "sleuth.tp1_qval"
+
+tp2 = select(tp2, target_id, pval, qval)
+colnames(tp2)[colnames(tp2)=="pval"] = "sleuth.tp2_pval"
+colnames(tp2)[colnames(tp2)=="qval"] = "sleuth.tp2_qval"
+
+tp3 = select(tp3, target_id, pval, qval)
+colnames(tp3)[colnames(tp3)=="pval"] = "sleuth.tp3_pval"
+colnames(tp3)[colnames(tp3)=="qval"] = "sleuth.tp3_qval"
+
+
+## Remove ".ec" columns
+## codex = Rosetta[, -grep(".ec", colnames(Rosetta))]
+codex = Rosetta
+
+# Get mean, variance of .tpm columns, by timepoint
+codex$meanTPM_T0 = rowMeans(codex[, grep("T0.", colnames(codex))])
+codex$meanTPM_T3 = rowMeans(codex[, grep("T3.", colnames(codex))])
+codex$meanTPM_T5 = rowMeans(codex[, grep("T5.", colnames(codex))])
+codex$meanTPM_T6 = rowMeans(codex[, grep("T6.", colnames(codex))])
+
+codex$varTPM_T0 = apply(codex[, grep("T0.", colnames(codex))], MARGIN = 1, FUN = var)
+codex$varTPM_T3 = apply(codex[, grep("T3.", colnames(codex))], MARGIN = 1, FUN = var)
+codex$varTPM_T5 = apply(codex[, grep("T5.", colnames(codex))], MARGIN = 1, FUN = var)
+codex$varTPM_T6 = apply(codex[, grep("T6.", colnames(codex))], MARGIN = 1, FUN = var)
+
+# Get FC and LR based on tpm values
+codex$tp1_FC = foldchange(codex$meanTPM_T3, codex$meanTPM_T0)
+codex$tp2_FC = foldchange(codex$meanTPM_T5, codex$meanTPM_T3)
+codex$tp3_FC = foldchange(codex$meanTPM_T6, codex$meanTPM_T5)
+
+codex$tp1_LR = foldchange2logratio(codex$tp1_FC, base=2)
+codex$tp2_LR = foldchange2logratio(codex$tp2_FC, base=2)
+codex$tp3_LR = foldchange2logratio(codex$tp3_FC, base=2)
+
+# Remove ".tpm" columns
+codex = codex[, -grep(".tpm", colnames(codex))]
+
+# Merges:
+## Change "ID" to "NODE"
+codex = merge(x = codex, y = sleuth, by.x = "NODE", by.y = "target_id", all.x = T)
+codex = merge(x = codex, y = tp1, by.x = "NODE", by.y = "target_id", all.x = T)
+codex = merge(x = codex, y = tp2, by.x = "NODE", by.y = "target_id", all.x = T)
+codex = merge(x = codex, y = tp3, by.x = "NODE", by.y = "target_id", all.x = T)
+## codex = merge(x = codex, y = commonOGs, by.x = "OG", by.y = "x", all.y = T) ## This line would sort by common OG
+
+# Write:
+write.csv(codex, file = "./Stringent_codex_tables/DC10_DE_Codex")
+```
+
+```{r Tests}
+table(codex[,"sleuth.timecourse_qval"] < 0.1)
+table(codex[,"sleuth.tp1_qval"] < 0.1)
+table(codex[,"sleuth.tp2_qval"] < 0.1)
+table(codex[,"sleuth.tp3_qval"] < 0.1)
+
+plot(codex$tp1_LR, codex$tp2_LR, col = rgb(0,0,1,0.1), xlim = c(-5,5), ylim = c(-5,5))
+lines(codex$tp1_LR, codex$tp2_LR, col = rgb(1,0,0,0.05), type = 'p')
+lines(codex$tp1_LR, codex$tp2_LR, col = rgb(0,0,0,0.02), type = 'p')
+
+plot(codex$tp2_LR, codex$tp3_LR, col = rgb(0,0,1,0.1), xlim = c(-5,5), ylim = c(-5,5))
+lines(codex$tp2_LR, codex$tp3_LR, col = rgb(1,0,0,0.05), type = 'p')
+lines(codex$tp2_LR, codex$tp3_LR, col = rgb(0,0,0,0.02), type = 'p')
+
+# What about...
+
+r = codex$sleuth.tp1_qval
+r[is.na(r)] <- 0
+g = codex$sleuth.tp2_qval
+g[is.na(g)] <- 0
+b = codex$sleuth.tp3_qval
+b[is.na(b)] <- 0
+rgb(0,0,1,0.1)
+
+plot(codex$tp1_LR, codex$tp2_LR, col = rgb(r,g,b,0.1), xlim = c(-5,5), ylim = c(-5,5))
+lines(codex$tp1_LR, codex$tp2_LR, col = rgb(r,g,b,0.05), type = 'p')
+lines(codex$tp1_LR, codex$tp2_LR, col = rgb(r,g,b,0.02), type = 'p')
+```
+```{r}
+codex = read.csv(file = "./Stringent_codex_tables/DC10_DE_Codex")
+
+
+codex = head(codex, 100)
+
+#install.packages("plotly")
+
+library(plotly)
+
+p <- plot_ly(codex, x = codex$tp1_LR, y = codex$tp2_LR, z = codex$tp3_LR, color = rgb(0,0,1,1)) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'tp1_LR'),
+                     yaxis = list(title = 'tp2_LR'),
+                     zaxis = list(title = 'tp3_LR')))
+
+p
+
+# Create a shareable link to your chart
+# Set up API credentials: https://plot.ly/r/getting-started
+# chart_link = api_create(p, filename="scatter3d-basic")
+#chart_link
+```
+
+
+### *Cleanup*
+```{r Cleanup}
+commonOGs = NULL
+metadata = NULL
+Rosetta = NULL
+sleuth = NULL
+so_1 = NULL
+so_2 = NULL
+so_3 = NULL
+st_1 = NULL
+st_2 = NULL
+st_3 = NULL
+tp1 = NULL
+tp2 = NULL
+tp3 = NULL
+codex = NULL
+```

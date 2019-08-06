@@ -1,0 +1,455 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+# This is super useful! Loop through list of species, read in and format files, output codexes merged with cg/cpg data. I wish I'd figured this out a LONG time ago. 
+
+species = c("DC10","DC20","DC30","DC40","DC50","DC80","DC70","DC80")
+
+for (i in 1:8){
+  name = species[i]
+  
+  path = paste0("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/",species[i],"_DE_Codex")
+  codex = read.csv(file = path)
+  codex$X = NULL
+  
+  path = paste0("~/Dimensions/Sequence_comp/nuc_comps/",species[i],"_transcripts_oneline.fasta_freq.tsv")
+  nuc_comp = read.csv(file = path, sep = '\t')
+  nuc_comp$X = gsub( ">", "", as.character(nuc_comp$X))
+  nuc_comp[is.na(nuc_comp)] <- 0
+  
+  path = paste0("~/Dimensions/Sequence_comp/dinuc_comps/",species[i],"_transcripts_oneline.fasta_dinuc_freq.tsv")
+  dinuc_comp = read.csv(file = path, sep = '\t')
+  dinuc_comp$X = gsub( ">", "", as.character(dinuc_comp$X))
+  dinuc_comp[is.na(dinuc_comp)] <- 0
+  
+  cg_cpg = data.frame(nuc_comp$X, nuc_comp$C + nuc_comp$G, dinuc_comp$CG)
+  colnames(cg_cpg) = c("ID","CG","CpG")
+  
+  out = merge(x = codex, y = cg_cpg, by.x = "ID", by.y = "ID")
+  assign(name, out)
+}
+
+cg_cpg = NULL
+codex = NULL
+dinuc_comp = NULL
+nuc_comp = NULL
+out = NULL
+```
+
+```{r Boxplots for all species CG & CpG}
+# Make individual data frames
+a = data.frame(group = "DC10", CG = DC10$CG, CpG = DC10$ CpG)
+b = data.frame(group = "DC20", CG = DC20$CG, CpG = DC20$ CpG)
+c = data.frame(group = "DC30", CG = DC30$CG, CpG = DC30$ CpG)
+d = data.frame(group = "DC40", CG = DC40$CG, CpG = DC40$ CpG)
+e = data.frame(group = "DC50", CG = DC50$CG, CpG = DC50$ CpG)
+f = data.frame(group = "DC60", CG = DC60$CG, CpG = DC60$ CpG)
+g = data.frame(group = "DC70", CG = DC70$CG, CpG = DC70$ CpG)
+h = data.frame(group = "DC80", CG = DC80$CG, CpG = DC80$ CpG)
+
+# Combine into one long data frame
+plot.data <- rbind(a, b, c, d, e, f, g, h)
+
+plot.2 <- rbind(e,h,f,d,b,a,g,c)
+
+#   group      value
+# 1     a  0.2322682
+# 2     a -0.9681992
+# ...
+# 101   b  0.3422354
+# 102   b  0.3495342
+# ...
+# 1001  c -0.6839231
+# 1002  c -1.4329843
+
+# Plot
+library(ggplot2)
+library(wesanderson)
+
+ggplot(plot.data, aes(x=group, y=CG, fill=group)) + geom_boxplot()
+ggsave("Species_CG.jpg")
+
+ggplot(plot.data, aes(x=group, y=CpG, fill=group)) + geom_boxplot()
+ggsave("Species_CpG.jpg")
+```
+
+```{r}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+```{r}
+a = ggplot(plot.2, aes(x=group, y=CG)) + geom_boxplot() + ylab ("GC")
+b = ggplot(plot.2, aes(x=group, y=CpG)) + geom_boxplot()
+
+multiplot(a,b,cols=1)
+```
+
+
+```{r DC10}
+ggplot(DC10[rev(order(DC10$CG)),], aes(x=tp1_LR, y=tp2_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC10_T1-2_CG.jpg")
+
+ggplot(DC10[rev(order(DC10$CG)),], aes(x=tp2_LR, y=tp3_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC10_T2-3_CG.jpg")
+
+ggplot(DC10[rev(order(DC10$CpG)),], aes(x=tp1_LR, y=tp2_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC10_T1-2_CpG.jpg")
+
+ggplot(DC10[rev(order(DC10$CpG)),], aes(x=tp2_LR, y=tp3_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC10_T2-3_CpG.jpg")
+```
+
+```{r DC20}
+ggplot(DC20[rev(order(DC20$CG)),], aes(x=tp1_LR, y=tp2_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC20_T1-2_CG.jpg")
+
+ggplot(DC20[rev(order(DC20$CG)),], aes(x=tp2_LR, y=tp3_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC20_T2-3_CG.jpg")
+
+ggplot(DC20[rev(order(DC20$CpG)),], aes(x=tp1_LR, y=tp2_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC20_T1-2_CpG.jpg")
+
+ggplot(DC20[rev(order(DC20$CpG)),], aes(x=tp2_LR, y=tp3_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC20_T2-3_CpG.jpg")
+```
+
+```{r DC30}
+ggplot(DC30[rev(order(DC30$CG)),], aes(x=tp1_LR, y=tp2_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC30_T1-2_CG.jpg")
+
+ggplot(DC30[rev(order(DC30$CG)),], aes(x=tp2_LR, y=tp3_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC30_T2-3_CG.jpg")
+
+ggplot(DC30[rev(order(DC30$CpG)),], aes(x=tp1_LR, y=tp2_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC30_T1-2_CpG.jpg")
+
+ggplot(DC30[rev(order(DC30$CpG)),], aes(x=tp2_LR, y=tp3_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC30_T2-3_CpG.jpg")
+```
+
+```{r DC40}
+ggplot(DC40[rev(order(DC40$CG)),], aes(x=tp1_LR, y=tp2_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC40_T1-2_CG.jpg")
+
+ggplot(DC40[rev(order(DC40$CG)),], aes(x=tp2_LR, y=tp3_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC40_T2-3_CG.jpg")
+
+ggplot(DC40[rev(order(DC40$CpG)),], aes(x=tp1_LR, y=tp2_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC40_T1-2_CpG.jpg")
+
+ggplot(DC40[rev(order(DC40$CpG)),], aes(x=tp2_LR, y=tp3_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC40_T2-3_CpG.jpg")
+```
+
+```{r DC50}
+ggplot(DC50[rev(order(DC50$CG)),], aes(x=tp1_LR, y=tp2_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC50_T1-2_CG.jpg")
+
+ggplot(DC50[rev(order(DC50$CG)),], aes(x=tp2_LR, y=tp3_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC50_T2-3_CG.jpg")
+
+ggplot(DC50[rev(order(DC50$CpG)),], aes(x=tp1_LR, y=tp2_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC50_T1-2_CpG.jpg")
+
+ggplot(DC50[rev(order(DC50$CpG)),], aes(x=tp2_LR, y=tp3_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC50_T2-3_CpG.jpg")
+```
+
+```{r DC60}
+ggplot(DC60[rev(order(DC60$CG)),], aes(x=tp1_LR, y=tp2_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC60_T1-2_CG.jpg")
+
+ggplot(DC60[rev(order(DC60$CG)),], aes(x=tp2_LR, y=tp3_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC60_T2-3_CG.jpg")
+
+ggplot(DC60[rev(order(DC60$CpG)),], aes(x=tp1_LR, y=tp2_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC60_T1-2_CpG.jpg")
+
+ggplot(DC60[rev(order(DC60$CpG)),], aes(x=tp2_LR, y=tp3_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC60_T2-3_CpG.jpg")
+```
+
+```{r DC70}
+ggplot(DC70[rev(order(DC70$CG)),], aes(x=tp1_LR, y=tp2_LR, color=CG)) + 
+  geom_point() + 
+  #xlim(-6,6) + 
+  #ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+#ggsave("DC70_T1-2_CG.jpg")
+
+ggplot(DC70[rev(order(DC70$CG)),], aes(x=tp2_LR, y=tp3_LR, color=CG)) + 
+  geom_point() + 
+  #xlim(-6,6) + 
+  #ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+#ggsave("DC70_T2-3_CG.jpg")
+
+ggplot(DC70[rev(order(DC70$CG)),], aes(x=tp3_LR, y=tp4_LR, color=CG)) + 
+  geom_point() + 
+  #xlim(-6,6) + 
+  #ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+#ggsave("DC70_T3-4_CG.jpg")
+
+ggplot(DC70[rev(order(DC70$CpG)),], aes(x=tp1_LR, y=tp2_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC70_T1-2_CpG.jpg")
+
+ggplot(DC70[rev(order(DC70$CpG)),], aes(x=tp2_LR, y=tp3_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC70_T2-3_CpG.jpg")
+
+ggplot(DC70[rev(order(DC70$CpG)),], aes(x=tp3_LR, y=tp4_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC70_T3-4_CpG.jpg")
+```
+
+```{r DC80}
+ggplot(DC80[rev(order(DC80$CG)),], aes(x=tp1_LR, y=tp2_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC80_T1-2_CG.jpg")
+
+ggplot(DC80[rev(order(DC80$CG)),], aes(x=tp2_LR, y=tp3_LR, color=CG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC80_T2-3_CG.jpg")
+
+ggplot(DC80[rev(order(DC80$CpG)),], aes(x=tp1_LR, y=tp2_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC80_T1-2_CpG.jpg")
+
+ggplot(DC80[rev(order(DC80$CpG)),], aes(x=tp2_LR, y=tp3_LR, color=CpG)) + 
+  geom_point() + 
+  xlim(-6,6) + 
+  ylim(-6,6) +
+scale_color_gradientn(colours = heat.colors(10)) +
+  theme_dark()
+
+ggsave("DC80_T2-3_CpG.jpg")
+```

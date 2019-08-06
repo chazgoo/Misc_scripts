@@ -1,0 +1,372 @@
+---
+title: "DEseq2: exploring, part i"
+author: Charles Goodman
+output: html_notebook
+---
+
+Documenting my initial foray into the Bioconductor:DEseq2 package - working with DC10 to assess the capabilities of the package.
+
+After working through the basic commands, review my 709F materials and talk to Phil about the statistical underpinings of these things. 
+
+Also, make sure to read all citations, and use them if any of this work makes it into publication!
+
+[DEseq Homepage](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)
+[Sample Workthrough](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
+[Full Manual](https://bioconductor.org/packages/release/bioc/manuals/DESeq2/man/DESeq2.pdf)
+
+**FYI: To use parallel operations:**
+```
+library("BiocParallel")
+register(MulticoreParam(4))
+```
+
+```{r}
+# Initializing DEseq
+source("https://bioconductor.org/biocLite.R")
+biocLite("DESeq2")
+
+# Packages
+library(dplyr)
+library(tibble)
+library(DESeq2)
+```
+
+Following section "Count matrix input" from the *Sample Workthrough*, I'll use my Roestta files as the basis for my count matricies.
+
+**Generate count matrix**
+```{r}
+# Read in DC10_Rosetta.csv
+ros_file = read.csv(file = "/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs/DC10_Rosetta.csv", header = T)
+
+# Need to subset! 
+# Use ID column for names, and .ec columns for counts
+DC10_counts = select(ros_file,
+                     t0.r1.ec, t0.r2.ec, t0.r3.ec, 
+                     t3.r1.ec, t3.r2.ec, t3.r3.ec,
+                     t5.r1.ec, t5.r2.ec, t5.r3.ec)
+
+# Set ros_file ID column as list row_names
+row_names = ros_file$ID
+
+# Set count matrix values as integers (effectively, rounds down to nearest whole#)
+DC10_counts = sapply(DC10_counts[,1:9], as.integer)
+
+# Set count matrix row names = row_names
+rownames(DC10_counts) = row_names
+
+head(DC10_counts)
+```
+
+**Generate column data**
+```{r}
+# Metadata for the count matrix
+coldata = data.frame(
+  row.names = colnames(DC10_counts),
+  condition = c("T1","T1","T1",
+                "T3","T3","T3",
+                "T5","T5","T5"),
+  type = c("paired-end","paired-end","paired-end",
+           "paired-end","paired-end","paired-end",
+           "paired-end","paired-end","paired-end"))
+
+coldata
+```
+
+**Generate DESeqDataSet**
+```{r}
+library("DESeq2")
+dds <- DESeqDataSetFromMatrix(countData = DC10_counts,
+                              colData = coldata,
+                              design = ~ condition)
+dds
+```
+
+**Prefiltering**
+
+I'm going to remove rows that sum to less than 10 - indicating low expression or undetected contigs (i.e. expression = 0 across the board)
+```{r}
+keep = rowSums(counts(dds)) >=10
+dds = dds[keep,]
+```
+
+**DESeq Analysis**
+```{r}
+dds = DESeq(dds)
+```
+
+Did it work?
+```{r}
+# Pairwise comparisons
+res.1.3 = results(dds, contrast=c("condition","T1","T3"), alpha = 0.05)
+res.1.5 = results(dds, contrast=c("condition","T1","T5"), alpha = 0.05)   # alpha = p-value cutoff
+res.3.5 = results(dds, contrast=c("condition","T3","T5"), alpha = 0.05)
+
+res.1.5
+```
+
+Seems so...
+
+*For now, play with res.1.5*
+
+**Trying some things**
+```{r}
+# Order by p-value
+res.1.5_Ord_p = res.1.5[order(res.1.5$pvalue),]
+res.1.3_Ord_p = res.1.3[order(res.1.3$pvalue),]
+res.3.5_Ord_p = res.3.5[order(res.3.5$pvalue),]
+
+# See summary
+summary(res.1.5)
+
+# How many adjusted p-values are less than 0.1?
+sum(res.1.5$padj < 0.1, na.rm = T)
+```
+
+**Exploring Results**
+```{r}
+# MA-plot; shows log2 fold change / mean of normalized counts, red = p-val < 0.05, out-of-window = triangle
+plotMA(res.1.5)
+```
+
+```{r}
+# lfcShrink; Shrinkage of effect size, for visualization and ranking of genes using apeglm (Zhu, A., Ibrahim, J.G., Love, M.I. (2018). This removes noise associated with log2 fold changes from low count genes. 
+
+# Check coefficient names
+resultsNames(dds)
+
+# Pass coefficients from the above call into lfcShrink()
+res.1.5_LFC = lfcShrink(dds, coef = "condition_T5_vs_T1", type = "apeglm")
+res.1.3_LFC = lfcShrink(dds, coef = "condition_T3_vs_T1", type = "apeglm")
+# res.3.5_LFC = lfcShrink(dds, coef = "condition_T5_vs_T3", type = "apeglm") #Can't get because it isn't a dds coefficient - may need to process timepoint pairs individually!
+
+# Let's look at T5/T1's LFC version
+plotMA(res.1.5_LFC, ylim=c(-10,10))
+plotMA(res.1.3_LFC, ylim=c(-10,10))
+
+```
+
+There are additional shrinkage estimators, but apeglm is generally considered the strongest at this point, according to the authors. (Zhu, A., Ibrahim, J.G., Love, M.I. (2018) Heavy-tailed prior distributions for sequence count data: removing the noise and preserving large differences. bioRxiv. 10.1101/303255)
+
+It *might* be very useful to actually identify DE where p < 0.05 (the points here in red), no? There are a few ways I could go about this. 
+
+```{r}
+# Plot the gene with the lowest p-value across conditions.
+# Obviously, I can sub any gene I want here.
+# Most interestingly, I get two different genes... dig into this further and figure out exactly what I'm dealing with. 
+plotCounts(dds, gene=which.min(res.1.3_LFC$padj), intgroup="condition")
+plotCounts(dds, gene=which.min(res.1.5_LFC$padj), intgroup="condition")
+
+# Let's do the same thing, using ggplot
+gg_dds <- plotCounts(dds, gene=which.min(res.1.5_LFC$padj), intgroup="condition", 
+                returnData=TRUE)
+library("ggplot2")
+ggplot(gg_dds, aes(x=condition, y=count)) + 
+  geom_point(position=position_jitter(w=0.1,h=0)) + 
+  scale_y_log10(breaks=c(25,100,400))
+```
+
+```{r}
+# Display more information on results columns
+mcols(res.1.5_LFC)$description
+```
+
+This next one is killer - **WRITE RESULTS TO CSV, also SUBSET W/ p-value!**
+
+```{r}
+# Write all results from a fiven res
+write.csv(as.data.frame(res.1.5_Ord_p), 
+          file="/exploring_data/DC10_res.1.5_Ord_p_results.csv")
+
+# Subset by p-value
+resSig <- subset(res.1.5_Ord_p, padj < 0.05)
+resSig
+```
+
+**Independent hypothesis weighting** - what is all of this saying?
+```{r}
+library("IHW")
+resIHW <- results(dds, filterFun=ihw)
+
+summary(resIHW)
+
+sum(resIHW$padj < 0.05, na.rm=TRUE)
+
+metadata(resIHW)$ihwResult
+```
+
+
+****
+Rethinking the pipeline?
+****
+
+In the previous steps, I was simply comparing two time-points (1 vs 3, 1 vs 5, 3 vs 5) - while it may be possible to procede this way, it might make more sense to figure out how to include all the data in a single analysis - though it seems that the in-built tool only compares timepoints to a single reference (T0), so this may not be appropriate... I emailed Phil - will see what he says. 
+
+Really, what I need is to revisit my 709F notes and get a grip on the actual statistics behind what I'm doing, and then consult Phil. 
+
+****
+Back to exploration
+****
+
+**Data Transformation**
+
+DESeq2 provides two options: VST and rlog. For both, the point is to remove dependence of variance on the mean. Basically, low-count genes will tend to show increased variance - this will help to abate that. 
+
+VST: variance stabilizing transformation
+rlog: Regularized log transformation
+
+```{r}
+# Transform and check
+vs_dds <- vst(dds, blind=FALSE)
+head(assay(vs_dds), 3)
+
+# this gives log2(n + 1)
+ntd <- normTransform(dds)
+library("vsn")        # Use biocLite (in sudo R session) to install first!
+library("hexbin")
+
+# Plot normal transformed
+meanSdPlot(assay(ntd))
+# Plot vsd log transformed
+meanSdPlot(assay(vs_dds))
+```
+
+I'm not totally sure what this does yet... I believe that red-blue color shows variance, indicating that overall varience is reduced in the csd-transformed dataset
+
+**Heatmap of count matrix**
+
+```{r}
+library("pheatmap")
+# Plot normal transformed
+select <- order(rowMeans(counts(dds,normalized=TRUE)),
+                decreasing=TRUE)[1:20000]
+df <- as.data.frame(colData(dds)[,c("condition","type")])
+pheatmap(assay(ntd)[select,], cluster_rows=FALSE, show_rownames=FALSE,
+         cluster_cols=FALSE, annotation_col=df)
+
+# Plot log transformed
+pheatmap(assay(vs_dds)[select,], cluster_rows=FALSE, show_rownames=FALSE,
+         cluster_cols=FALSE, annotation_col=df)
+```
+
+What if we would like to see a selection of genes that are most highly variable across all time points?
+
+```{r}
+library("genefilter")
+topVarGenes <- head(order(rowVars(assay(vs_dds)), decreasing = TRUE), 25)
+
+mat  <- assay(vs_dds)[ topVarGenes, ]
+mat  <- mat - rowMeans(mat)
+anno <- as.data.frame(colData(vs_dds)[, c("condition","type")])
+pheatmap(mat, annotation_col = anno)
+```
+
+Cool! 
+
+**Heatmap of sample-to-sample distances**
+
+```{r}
+sampleDists <- dist(t(assay(vs_dds)))
+
+library("RColorBrewer")
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(vs_dds$condition, vs_dds$type, sep="-")
+colnames(sampleDistMatrix) <- NULL
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         col=colors)
+```
+
+**pca**
+
+```{r}
+pcaData <- plotPCA(vs_dds, intgroup=c("condition", "type"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+library("ggplot2")
+ggplot(pcaData, aes(PC1, PC2, color=condition, shape=type)) +
+  geom_point(size=3) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+```
+
+```{r}
+plotDispEsts(dds)
+```
+
+```{r}
+par(mfrow=c(2,2),mar=c(2,2,1,1))
+ylim <- c(-2.5,2.5)
+resGA <- results(dds, lfcThreshold=.5, altHypothesis="greaterAbs")
+resLA <- results(dds, lfcThreshold=.5, altHypothesis="lessAbs")
+resG <- results(dds, lfcThreshold=.5, altHypothesis="greater")
+resL <- results(dds, lfcThreshold=.5, altHypothesis="less")
+drawLines <- function() abline(h=c(-.5,.5),col="dodgerblue",lwd=2)
+plotMA(resGA, ylim=ylim); drawLines()
+plotMA(resLA, ylim=ylim); drawLines()
+plotMA(resG, ylim=ylim); drawLines()
+plotMA(resL, ylim=ylim); drawLines()
+```
+
+****
+****
+
+Can I get a Rorshach plot of 1v3/3v5? 
+
+LogFold change values can be found in res.3.5 and res.1.3:
+```{r}
+head(res.1.3)
+head(res.3.5)
+```
+
+```{r}
+# This is sloppy, just testing!
+# plot(res.1.3$log2FoldChange, res.3.5$log2FoldChange, col = rgb(0,0,0,0.1))
+
+plot(res.1.3$log2FoldChange, res.3.5$log2FoldChange, col = rgb(0,0,1,0.1), xlim=c(-10,10), ylim=c(-10,10))
+lines(res.1.3$log2FoldChange, res.3.5$log2FoldChange, col = rgb(1,0,0,0.05), type = 'p')
+lines(res.1.3$log2FoldChange, res.3.5$log2FoldChange, col = rgb(0,0,0,0.01), type = 'p')
+
+plot(res.1.3$baseMean, res.3.5$baseMean, col = rgb(0,0,1,0.1))
+lines(res.1.3$baseMean, res.3.5$baseMean, col = rgb(1,0,0,0.05), type = 'p')
+lines(res.1.3$baseMean, res.3.5$baseMean, col = rgb(0,0,0,0.01), type = 'p')
+
+# What if I only want to see p<0.05?
+resSig.1.3 <- subset(res.1.3, padj < 0.05)
+resSig.3.5 <- subset(res.3.5, padj < 0.05)
+
+# plot(resSig.1.3$log2FoldChange, resSig.3.5$log2FoldChange, col = rgb(0,0,1,0.1), xlim=c(-10,10), ylim=c(-10,10))
+# lines(resSig.1.3$log2FoldChange, resSig.3.5$log2FoldChange, col = rgb(1,0,0,0.05), type = 'p')
+# lines(resSig.1.3$log2FoldChange, resSig.3.5$log2FoldChange, col = rgb(0,0,0,0.01), type = 'p')
+```
+
+Very interesting to not that this looks distinctly different than the plots we produced with Tim; is that an issue of Log10 vs. Log2? How he treated zeros? 
+
+Alright - at this point I've run through all the basic pipeline steps. Now I need to go back and really dig into the statistical underpinnings of these, and then determine what exactly I want to accomplish!
+
+Ideas:
+
+Per species
+1. Run all pairs of timepoints, extract DE values w/ p<0.05 - maybe only consecutive timepoints?
+2. Which genes are differentially expressed in which timepoint pairs? 
+3. Which genes are constituatively expressed?
+4. Rorshach plots w/ statistically-significant points overlaid?
+5. Rorshach plots w/ gene families highlighted? 
+
+As a group
+1. What orthogroups are ALL constituatively/differentially expressed? 
+2. Are DE'd families consistent in their expression change? 
+3. Is there a way I can present a unifying figure for all of these? 
+
+Final note: when running DESeq() on the dds containing all three timepoints, only T3/T1 and T5/T1 were apparent - I did not see a T5/T3 coefficient with resultnamnes(). Because I want to compare T5/T3 seperately, I may need to make a seperate dds for this purpose. 
+
+From this point, next steps with a single species would look like this:
+
+- export the pVal-sorted results lists for T3/T1 and T5/T3
+- filter by pAdj<0.05 to get DE
+- filter by (how to determine/define constituently expressed genes?) to get CE
+- Sort Rosetta, for each timepoint, using NODE# to extract ID and Orthogroup info for both groups
+- Repeat for all 8 monoculture datasets
+- Script the download of GO terms, obtain gene family information, start postulating on the actual biology
+- Move onto comparisons of the 8, and write a fucking paper

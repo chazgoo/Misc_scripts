@@ -1,0 +1,119 @@
+---
+title: "Sleuth_exploring_monos.pairwise"
+author: Charles Goodman
+output: html_notebook
+---
+
+This notebook will be used to produce locally saved sleuth_objects and summary sleuth_tables for each of the monoculture datasets - except rather than a full timecourse analysis, we're considering consecutive pairs of timepoints. Here, exploratory run with DC10 - later I'll write a cleaner version with better varnames and comments.
+
+*Intros and manuals*
+```{r}
+vignette('intro', package = 'sleuth')
+help(package = 'sleuth')
+```
+
+Also see:
+
+[GitHub](https://github.com/pachterlab/sleuth)
+[Pachter Lab](https://pachterlab.github.io/sleuth/)
+
+*Kallisto output data pooling*
+```
+# 1. Copied kallisto data from ~/Dimensions/R_analyses/Monoculture_Expression_Data to ~/Dimensions/Monocultures (orig. still intact!)
+scp -r ./Data/ /home/cagood/Dimensions/Monocultures/
+
+# 2. Renamed directory to mono_expr_data
+mv Data/ mono_expr_data
+
+# 3. Changed kallisto output directories from 'kallisto_t0_r1' etc. to 'DC10_t0_r1' etc... NOTE: do this for each species!
+rename 's/kallisto/DC10/' kallisto_*/
+
+# 4. Find and delete empty directories below current dir
+find . -type d -empty -print
+find . -type d -empty -delete
+
+# Now each monoculture has specifically-named kallisto output data.
+```
+
+*Initialize packages*
+
+```{r include=FALSE}
+source("http://bioconductor.org/biocLite.R")
+# Only need to install these packages once... do this from sudo R session in terminal
+##biocLite("devtools")
+##biocLite("pachterlab/sleuth")
+##biocLite("rhdf5")
+##biocLite("shinyapp")
+
+library("dplyr")
+library("sleuth")
+library("rhdf5")
+library("devtools")
+library("shiny")
+library("splines")
+```
+
+*Analyses, by pairwise timepoints*
+Format a block for each pair of consecutive timepoints.
+
+**Input** = kallisto data location, condition values, output var/filenames
+**Output** = A local named sleuth_object, and a csv of sleuth_results() values
+
+*Read in data*
+```{r}
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/01")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/01",sample_id)
+
+# Construct a metadata table
+metadata = data.frame(
+  condition = c("T0","T0","T0",
+                "T3","T3","T3",
+                "T5","T5","T5"),
+  sample = sample_id,
+  path = as.character(kal_dirs))
+
+metadata = data.frame(lapply(metadata, as.character), stringsAsFactors = FALSE)
+```
+
+*Construct a sleuth object*
+```{r}
+# Subset T1/T3 values
+T0T3 = dplyr::select(metadata[1:6,], sample, condition, path)
+T3T5 = dplyr::select(metadata[4:9,], sample, condition, path)
+
+# Construct the sleuth object
+so_T0T3 = sleuth_prep(T0T3)
+so_T3T5 = sleuth_prep(T3T5)
+```
+
+*Fit models*
+```{r}
+so_T0T3 = sleuth_fit(so_T0T3, ~condition, 'full')
+so_T0T3 = sleuth_fit(so_T0T3, ~1, 'reduced')
+
+so_T3T5 = sleuth_fit(so_T3T5, ~condition, 'full')
+so_T3T5 = sleuth_fit(so_T3T5, ~1, 'reduced')
+
+# Check fit models
+models(so_T0T3)
+models(so_T3T5)
+```
+
+*Run Tests*
+```{r}
+so_T0T3 = sleuth_lrt(so_T0T3, 'reduced', 'full')
+so_T3T5 = sleuth_lrt(so_T3T5, 'reduced', 'full')
+```
+
+*Get results and write tables*
+```{r}
+st_T0T3 = sleuth_results(so_T0T3, 'reduced:full', 'lrt', show_all = TRUE)
+st_T3T5 = sleuth_results(so_T3T5, 'reduced:full', 'lrt', show_all = TRUE)
+
+write.csv(st_T0T3, file = "./mono_sleuth_pairwise/DC10_T0T3_sleuth-tab", row.names = FALSE)
+write.csv(st_T3T5, file = "./mono_sleuth_pairwise/DC10_T3T5_sleuth-tab", row.names = FALSE)
+```
+

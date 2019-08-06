@@ -1,0 +1,42 @@
+---
+title: "8x8 RBH analysis"
+output: html_notebook
+---
+
+```{r}
+all_RBH = read.csv("all_RBH.tsv", sep = '\t')
+
+head(all_RBH)
+```
+
+
+```{r}
+# Subsetting & plotting DC10
+DC10q = all_RBH[grepl("DC10_", all_RBH$query.id),]
+
+DC10qDC20s = DC10q[grepl("DC20_", DC10q$subject.id),]
+DC10qDC30s = DC10q[grepl("DC30_", DC10q$subject.id),]
+DC10qDC40s = DC10q[grepl("DC40_", DC10q$subject.id),]
+DC10qDC50s = DC10q[grepl("DC50_", DC10q$subject.id),]
+DC10qDC60s = DC10q[grepl("DC60_", DC10q$subject.id),]
+DC10qDC70s = DC10q[grepl("DC70_", DC10q$subject.id),]
+DC10qDC80s = DC10q[grepl("DC80_", DC10q$subject.id),]
+
+plot(density(DC10qDC20s$X..identity))
+plot(density(DC10qDC30s$X..identity))
+plot(density(DC10qDC40s$X..identity))
+plot(density(DC10qDC50s$X..identity))
+plot(density(DC10qDC60s$X..identity))
+plot(density(DC10qDC70s$X..identity))
+plot(density(DC10qDC80s$X..identity))
+
+hist(DC10qDC20s$X..identity, breaks = 100)
+hist(DC10qDC30s$X..identity, breaks = 100)
+hist(DC10qDC40s$X..identity, breaks = 100)
+hist(DC10qDC50s$X..identity, breaks = 100)
+hist(DC10qDC60s$X..identity, breaks = 100)
+hist(DC10qDC70s$X..identity, breaks = 100)
+hist(DC10qDC80s$X..identity, breaks = 100)
+```
+
+This initial output, to me, suggests that I need to re-blast using only complete transcripts. 

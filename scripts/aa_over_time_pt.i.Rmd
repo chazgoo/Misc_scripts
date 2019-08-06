@@ -1,0 +1,432 @@
+---
+title: "aa_over_time"
+output: html_notebook
+---
+
+Notes: This serves the basic purpose of reporting aa_composition, however it'd be great to plot this with error bars to show variance. Other than that, I'm suprised that the base refT aa% is so similar to aa%s at each timepoint. Rewrite this process to obtain standard deviations of %aa. 
+
+```{r DC10}
+# Read in and format Rosetta and amino-acid composition files
+Rosfile = read.csv("~/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC10_Rosetta.csv")
+Rosfile$X = NULL
+
+aa_counts = read.csv("~/Dimensions/Sequence_comp/aa_comps/oneline_DC10_greenORFs.fasta_count.tsv", sep = '\t')
+aa_counts$X.1 = gsub( ">", "", as.character(aa_counts$X.1))
+aa_counts[is.na(aa_counts)] <- 0
+
+# Subset Rosfile -> ec_table by taking means of ECs for repeats at each timepoint, NULL Rosfile to keep things fast
+ec_table = data.frame(Rosfile$ID,
+                      rowMeans(Rosfile[, grep("T0.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T3.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T5.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T6.ec", colnames(Rosfile))]))
+colnames(ec_table) = c("ID","mean_T1.ec","mean_T2.ec","mean_T3.ec","mean_T4.ec")
+
+Rosfile = NULL
+
+# Make a new table: merge mean_TN.ec to aa_file by ID
+aa_counts = merge(x = ec_table, y = aa_counts, by.x = "ID", by.y = "X.1")
+
+# Get sum of all aa columns individually and together, and then make a plot of the refT aa% composition 
+refT = data.frame(colSums(aa_counts[,c(6:27)]))
+aa_freqs = refT/colSums(refT)
+
+# multiply transcript counts by mean.ec values - do this for each timepoint in a loop. Merge all outputs to aa_freqs
+for (mean.ec in c(2:5)){
+TP_aa_ec = aa_counts[,mean.ec] * aa_counts[-(1:5)]
+n = sum(colSums(TP_aa_ec))
+TP_aa_prop = data.frame(colSums(TP_aa_ec[,c(1:22)])/sum(colSums(TP_aa_ec)))
+aa_freqs[,mean.ec] = TP_aa_prop
+}
+
+colnames(aa_freqs) = c("refT","T1_aa_prop","T2_aa_prop","T3_aa_prop","T4_aa_prop")
+
+DC10_aa_freqs = aa_freqs
+
+DC10_aa_freqs <- data.frame(aa = row.names(DC10_aa_freqs), DC10_aa_freqs)
+```
+
+```{r DC20}
+# Read in and format Rosetta and amino-acid composition files
+Rosfile = read.csv("~/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC20_Rosetta.csv")
+Rosfile$X = NULL
+
+aa_counts = read.csv("~/Dimensions/Sequence_comp/aa_comps/oneline_DC20_greenORFs.fasta_count.tsv", sep = '\t')
+aa_counts$X.1 = gsub( ">", "", as.character(aa_counts$X.1))
+aa_counts[is.na(aa_counts)] <- 0
+
+# Subset Rosfile -> ec_table by taking means of ECs for repeats at each timepoint, NULL Rosfile to keep things fast
+ec_table = data.frame(Rosfile$ID,
+                      rowMeans(Rosfile[, grep("T1.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T4.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T5.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T6.ec", colnames(Rosfile))]))
+colnames(ec_table) = c("ID","mean_T1.ec","mean_T2.ec","mean_T3.ec","mean_T4.ec")
+
+Rosfile = NULL
+
+# Make a new table: merge mean_TN.ec to aa_file by ID
+aa_counts = merge(x = ec_table, y = aa_counts, by.x = "ID", by.y = "X.1")
+
+# Get sum of all aa columns individually and together, and then make a plot of the refT aa% composition 
+refT = data.frame(colSums(aa_counts[,c(6:27)]))
+aa_freqs = refT/colSums(refT)
+
+# multiply transcript counts by mean.ec values - do this for each timepoint in a loop. Merge all outputs to aa_freqs
+for (mean.ec in c(2:5)){
+TP_aa_ec = aa_counts[,mean.ec] * aa_counts[-(1:5)]
+n = sum(colSums(TP_aa_ec))
+TP_aa_prop = data.frame(colSums(TP_aa_ec[,c(1:22)])/sum(colSums(TP_aa_ec)))
+aa_freqs[,mean.ec] = TP_aa_prop
+}
+
+colnames(aa_freqs) = c("refT","T1_aa_prop","T2_aa_prop","T3_aa_prop","T4_aa_prop")
+
+DC20_aa_freqs = aa_freqs
+
+DC20_aa_freqs <- data.frame(aa = row.names(DC20_aa_freqs), DC20_aa_freqs)
+```
+
+```{r DC30}
+# Read in and format Rosetta and amino-acid composition files
+Rosfile = read.csv("~/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC30_Rosetta.csv")
+Rosfile$X = NULL
+
+aa_counts = read.csv("~/Dimensions/Sequence_comp/aa_comps/oneline_DC30_greenORFs.fasta_count.tsv", sep = '\t')
+aa_counts$X.1 = gsub( ">", "", as.character(aa_counts$X.1))
+aa_counts[is.na(aa_counts)] <- 0
+
+# Subset Rosfile -> ec_table by taking means of ECs for repeats at each timepoint, NULL Rosfile to keep things fast
+ec_table = data.frame(Rosfile$ID,
+                      rowMeans(Rosfile[, grep("T1.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T3.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T5.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T6.ec", colnames(Rosfile))]))
+colnames(ec_table) = c("ID","mean_T1.ec","mean_T2.ec","mean_T3.ec","mean_T4.ec")
+
+Rosfile = NULL
+
+# Make a new table: merge mean_TN.ec to aa_file by ID
+aa_counts = merge(x = ec_table, y = aa_counts, by.x = "ID", by.y = "X.1")
+
+# Get sum of all aa columns individually and together, and then make a plot of the refT aa% composition 
+refT = data.frame(colSums(aa_counts[,c(6:27)]))
+aa_freqs = refT/colSums(refT)
+
+# multiply transcript counts by mean.ec values - do this for each timepoint in a loop. Merge all outputs to aa_freqs
+for (mean.ec in c(2:5)){
+TP_aa_ec = aa_counts[,mean.ec] * aa_counts[-(1:5)]
+n = sum(colSums(TP_aa_ec))
+TP_aa_prop = data.frame(colSums(TP_aa_ec[,c(1:22)])/sum(colSums(TP_aa_ec)))
+aa_freqs[,mean.ec] = TP_aa_prop
+}
+
+colnames(aa_freqs) = c("refT","T1_aa_prop","T2_aa_prop","T3_aa_prop","T4_aa_prop")
+
+DC30_aa_freqs = aa_freqs
+
+DC30_aa_freqs <- data.frame(aa = row.names(DC30_aa_freqs), DC30_aa_freqs)
+```
+
+```{r DC40}
+# Read in and format Rosetta and amino-acid composition files
+Rosfile = read.csv("~/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC40_Rosetta.csv")
+Rosfile$X = NULL
+
+aa_counts = read.csv("~/Dimensions/Sequence_comp/aa_comps/oneline_DC40_greenORFs.fasta_count.tsv", sep = '\t')
+aa_counts$X.1 = gsub( ">", "", as.character(aa_counts$X.1))
+aa_counts[is.na(aa_counts)] <- 0
+
+# Subset Rosfile -> ec_table by taking means of ECs for repeats at each timepoint, NULL Rosfile to keep things fast
+ec_table = data.frame(Rosfile$ID,
+                      rowMeans(Rosfile[, grep("T2.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T4.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T6.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("TY.ec", colnames(Rosfile))]))
+colnames(ec_table) = c("ID","mean_T1.ec","mean_T2.ec","mean_T3.ec","mean_T4.ec")
+
+Rosfile = NULL
+
+# Make a new table: merge mean_TN.ec to aa_file by ID
+aa_counts = merge(x = ec_table, y = aa_counts, by.x = "ID", by.y = "X.1")
+
+# Get sum of all aa columns individually and together, and then make a plot of the refT aa% composition 
+refT = data.frame(colSums(aa_counts[,c(6:27)]))
+aa_freqs = refT/colSums(refT)
+
+# multiply transcript counts by mean.ec values - do this for each timepoint in a loop. Merge all outputs to aa_freqs
+for (mean.ec in c(2:5)){
+TP_aa_ec = aa_counts[,mean.ec] * aa_counts[-(1:5)]
+n = sum(colSums(TP_aa_ec))
+TP_aa_prop = data.frame(colSums(TP_aa_ec[,c(1:22)])/sum(colSums(TP_aa_ec)))
+aa_freqs[,mean.ec] = TP_aa_prop
+}
+
+colnames(aa_freqs) = c("refT","T1_aa_prop","T2_aa_prop","T3_aa_prop","T4_aa_prop")
+
+DC40_aa_freqs = aa_freqs
+
+DC40_aa_freqs <- data.frame(aa = row.names(DC40_aa_freqs), DC40_aa_freqs)
+```
+
+```{r DC50}
+# Read in and format Rosetta and amino-acid composition files
+Rosfile = read.csv("~/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC50_Rosetta.csv")
+Rosfile$X = NULL
+
+aa_counts = read.csv("~/Dimensions/Sequence_comp/aa_comps/oneline_DC50_greenORFs.fasta_count.tsv", sep = '\t')
+aa_counts$X.1 = gsub( ">", "", as.character(aa_counts$X.1))
+aa_counts[is.na(aa_counts)] <- 0
+
+# Subset Rosfile -> ec_table by taking means of ECs for repeats at each timepoint, NULL Rosfile to keep things fast
+ec_table = data.frame(Rosfile$ID,
+                      rowMeans(Rosfile[, grep("T2.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T3.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T5.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("TWB.ec", colnames(Rosfile))]))
+colnames(ec_table) = c("ID","mean_T1.ec","mean_T2.ec","mean_T3.ec","mean_T4.ec")
+
+Rosfile = NULL
+
+# Make a new table: merge mean_TN.ec to aa_file by ID
+aa_counts = merge(x = ec_table, y = aa_counts, by.x = "ID", by.y = "X.1")
+
+# Get sum of all aa columns individually and together, and then make a plot of the refT aa% composition 
+refT = data.frame(colSums(aa_counts[,c(6:27)]))
+aa_freqs = refT/colSums(refT)
+
+# multiply transcript counts by mean.ec values - do this for each timepoint in a loop. Merge all outputs to aa_freqs
+for (mean.ec in c(2:5)){
+TP_aa_ec = aa_counts[,mean.ec] * aa_counts[-(1:5)]
+n = sum(colSums(TP_aa_ec))
+TP_aa_prop = data.frame(colSums(TP_aa_ec[,c(1:22)])/sum(colSums(TP_aa_ec)))
+aa_freqs[,mean.ec] = TP_aa_prop
+}
+
+colnames(aa_freqs) = c("refT","T1_aa_prop","T2_aa_prop","T3_aa_prop","T4_aa_prop")
+
+DC50_aa_freqs = aa_freqs
+
+DC50_aa_freqs <- data.frame(aa = row.names(DC50_aa_freqs), DC50_aa_freqs)
+```
+
+```{r DC60}
+# Read in and format Rosetta and amino-acid composition files
+Rosfile = read.csv("~/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC60_Rosetta.csv")
+Rosfile$X = NULL
+
+aa_counts = read.csv("~/Dimensions/Sequence_comp/aa_comps/oneline_DC60_greenORFs.fasta_count.tsv", sep = '\t')
+aa_counts$X.1 = gsub( ">", "", as.character(aa_counts$X.1))
+aa_counts[is.na(aa_counts)] <- 0
+
+# Subset Rosfile -> ec_table by taking means of ECs for repeats at each timepoint, NULL Rosfile to keep things fast
+ec_table = data.frame(Rosfile$ID,
+                      rowMeans(Rosfile[, grep("T2.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T3.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T5.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T6.ec", colnames(Rosfile))]))
+colnames(ec_table) = c("ID","mean_T1.ec","mean_T2.ec","mean_T3.ec","mean_T4.ec")
+
+Rosfile = NULL
+
+# Make a new table: merge mean_TN.ec to aa_file by ID
+aa_counts = merge(x = ec_table, y = aa_counts, by.x = "ID", by.y = "X.1")
+
+# Get sum of all aa columns individually and together, and then make a plot of the refT aa% composition 
+refT = data.frame(colSums(aa_counts[,c(6:27)]))
+aa_freqs = refT/colSums(refT)
+
+# multiply transcript counts by mean.ec values - do this for each timepoint in a loop. Merge all outputs to aa_freqs
+for (mean.ec in c(2:5)){
+TP_aa_ec = aa_counts[,mean.ec] * aa_counts[-(1:5)]
+n = sum(colSums(TP_aa_ec))
+TP_aa_prop = data.frame(colSums(TP_aa_ec[,c(1:22)])/sum(colSums(TP_aa_ec)))
+aa_freqs[,mean.ec] = TP_aa_prop
+}
+
+colnames(aa_freqs) = c("refT","T1_aa_prop","T2_aa_prop","T3_aa_prop","T4_aa_prop")
+
+DC60_aa_freqs = aa_freqs
+
+DC60_aa_freqs <- data.frame(aa = row.names(DC60_aa_freqs), DC60_aa_freqs)
+```
+
+```{r DC70}
+# Read in and format Rosetta and amino-acid composition files
+Rosfile = read.csv("~/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC70_Rosetta.csv")
+Rosfile$X = NULL
+
+aa_counts = read.csv("~/Dimensions/Sequence_comp/aa_comps/oneline_DC70_greenORFs.fasta_count.tsv", sep = '\t')
+aa_counts$X.1 = gsub( ">", "", as.character(aa_counts$X.1))
+aa_counts[is.na(aa_counts)] <- 0
+
+# Subset Rosfile -> ec_table by taking means of ECs for repeats at each timepoint, NULL Rosfile to keep things fast
+ec_table = data.frame(Rosfile$ID,
+                      rowMeans(Rosfile[, grep("T1.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T4.ec", colnames(Rosfile))]),
+                      (Rosfile[, grep("T6.ec", colnames(Rosfile))]),  # Only 1 repeat, can't do mean!
+                      rowMeans(Rosfile[, grep("TWB.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("TY.ec", colnames(Rosfile))]))
+colnames(ec_table) = c("ID","mean_T1.ec","mean_T2.ec","mean_T3.ec","mean_T4.ec","mean_T5.ec")
+
+Rosfile = NULL
+
+# Make a new table: merge mean_TN.ec to aa_file by ID
+aa_counts = merge(x = ec_table, y = aa_counts, by.x = "ID", by.y = "X.1")
+
+# Get sum of all aa columns individually and together, and then make a plot of the refT aa% composition 
+refT = data.frame(colSums(aa_counts[,c(7:28)]))
+aa_freqs = refT/colSums(refT)
+
+# multiply transcript counts by mean.ec values - do this for each timepoint in a loop. Merge all outputs to aa_freqs
+for (mean.ec in c(2:6)){
+TP_aa_ec = aa_counts[,mean.ec] * aa_counts[-(1:6)]
+n = sum(colSums(TP_aa_ec))
+TP_aa_prop = data.frame(colSums(TP_aa_ec[,c(1:22)])/sum(colSums(TP_aa_ec)))
+aa_freqs[,mean.ec] = TP_aa_prop
+}
+
+colnames(aa_freqs) = c("refT","T1_aa_prop","T2_aa_prop","T3_aa_prop","T4_aa_prop","T5_aa_prop")
+
+DC70_aa_freqs = aa_freqs
+
+DC70_aa_freqs <- data.frame(aa = row.names(DC70_aa_freqs), DC70_aa_freqs)
+```
+
+```{r DC80}
+# Read in and format Rosetta and amino-acid composition files
+Rosfile = read.csv("~/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC80_Rosetta.csv")
+Rosfile$X = NULL
+
+aa_counts = read.csv("~/Dimensions/Sequence_comp/aa_comps/oneline_DC80_greenORFs.fasta_count.tsv", sep = '\t')
+aa_counts$X.1 = gsub( ">", "", as.character(aa_counts$X.1))
+aa_counts[is.na(aa_counts)] <- 0
+
+# Subset Rosfile -> ec_table by taking means of ECs for repeats at each timepoint, NULL Rosfile to keep things fast
+ec_table = data.frame(Rosfile$ID,
+                      rowMeans(Rosfile[, grep("T1.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T2.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T4.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T6.ec", colnames(Rosfile))]))
+colnames(ec_table) = c("ID","mean_T1.ec","mean_T2.ec","mean_T3.ec","mean_T4.ec")
+
+Rosfile = NULL
+
+# Make a new table: merge mean_TN.ec to aa_file by ID
+aa_counts = merge(x = ec_table, y = aa_counts, by.x = "ID", by.y = "X.1")
+
+# Get sum of all aa columns individually and together, and then make a plot of the refT aa% composition 
+refT = data.frame(colSums(aa_counts[,c(6:27)]))
+aa_freqs = refT/colSums(refT)
+
+# multiply transcript counts by mean.ec values - do this for each timepoint in a loop. Merge all outputs to aa_freqs
+for (mean.ec in c(2:5)){
+TP_aa_ec = aa_counts[,mean.ec] * aa_counts[-(1:5)]
+n = sum(colSums(TP_aa_ec))
+TP_aa_prop = data.frame(colSums(TP_aa_ec[,c(1:22)])/sum(colSums(TP_aa_ec)))
+aa_freqs[,mean.ec] = TP_aa_prop
+}
+
+colnames(aa_freqs) = c("refT","T1_aa_prop","T2_aa_prop","T3_aa_prop","T4_aa_prop")
+
+DC80_aa_freqs = aa_freqs
+
+DC80_aa_freqs <- data.frame(aa = row.names(DC80_aa_freqs), DC80_aa_freqs)
+```
+
+```{r cleanup}
+aa_counts = NULL
+aa_freqs = NULL
+refT = NULL
+TP_aa_ec = NULL
+TP_aa_prop = NULL
+ec_table = NULL
+```
+
+```{r all refTs}
+# First need to merge all the boys:
+library(tidyverse)
+
+all_refTs = bind_cols(DC10_aa_freqs[,c(1:2)],
+                      DC20_aa_freqs[,c(1:2)],
+                      DC30_aa_freqs[,c(1:2)],
+                      DC40_aa_freqs[,c(1:2)],
+                      DC50_aa_freqs[,c(1:2)],
+                      DC60_aa_freqs[,c(1:2)],
+                      DC70_aa_freqs[,c(1:2)],
+                      DC80_aa_freqs[,c(1:2)])
+
+all_refTs[,c(3,5,7,9,11,13,15)] = NULL
+
+colnames(all_refTs) = c("aa",
+                        "DC10",
+                        "DC20",
+                        "DC30",
+                        "DC40",
+                        "DC50",
+                        "DC60",
+                        "DC70",
+                        "DC80")
+```
+
+```{r}
+long_refT = gather(all_refTs, key = "species", value = "aa_prop", 2:9)
+
+long_DC10 = gather(DC10_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+long_DC20 = gather(DC20_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+long_DC30 = gather(DC30_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+long_DC40 = gather(DC40_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+long_DC50 = gather(DC50_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+long_DC60 = gather(DC60_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+long_DC70 = gather(DC70_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+long_DC80 = gather(DC80_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+```
+
+```{r plots by species}
+barplot(as.matrix(DC10_aa_freqs[,c(2:6)]))
+barplot(as.matrix(DC20_aa_freqs[,c(2:6)]))
+barplot(as.matrix(DC30_aa_freqs[,c(2:6)]))
+barplot(as.matrix(DC40_aa_freqs[,c(2:6)]))
+barplot(as.matrix(DC50_aa_freqs[,c(2:6)]))
+barplot(as.matrix(DC60_aa_freqs[,c(2:6)]))
+barplot(as.matrix(DC70_aa_freqs[,c(2:6)]))
+barplot(as.matrix(DC80_aa_freqs[,c(2:6)]))
+
+barplot(as.matrix(all_refTs[,c(2:9)]))
+```
+
+```{r grouped plots by species}
+ggplot(data=long_DC10, aes(x=aa, y=aa_prop, fill=timepoint)) +
+geom_bar(stat="identity", position=position_dodge())
+
+ggplot(data=long_refT, aes(x=aa, y=aa_prop, fill=species)) +
+geom_bar(stat="identity", position=position_dodge())
+```
+
+```{r}
+# Get error bars (SE of proportions)
+# IMPORTANT: only works if 'n' is derived from the appropriate population - run this directly after each species!!!
+
+long_DC10 = gather(DC10_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+
+p = long_DC10$aa_prop
+
+long_DC10$aa_SE = sqrt(p*(1-p)/n)
+long_DC10$aa_CI = qnorm(.975) * long_DC10$aa_SE
+
+long_DC10[c(1:22),4] = NA
+
+ggplot(data=long_DC10, aes(x=aa, y=aa_prop, fill=timepoint)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin=aa_prop-aa_SE, ymax=aa_prop+aa_SE), width=.2, position=position_dodge(.9))
+```
+
+
+```{r}
+
+tmp = subset(long_DC10, long_DC10$aa == "T")
+
+ggplot(data=tmp, aes(x=aa, y=aa_prop, fill=timepoint)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin=aa_prop-aa_SE, ymax=aa_prop+aa_SE), width=.2, position=position_dodge(.9))
+```

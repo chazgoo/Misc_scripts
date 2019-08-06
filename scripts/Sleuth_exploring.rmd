@@ -1,0 +1,112 @@
+---
+title: "Sleuth_exploring"
+author: Charles Goodman
+output: html_notebook
+---
+
+In attempting a differential expression analysis of the Dimensions dataset, I began with DESeq2. Because Kallisto counts at the transcript level, and not the gene level, gene isoforms are not accounted for in the same way. In addition, in DESeq2, counts are modeled "as following a negative binomial distribution". This assumption is not valid when summing estimated counts of transcripts to obtain gene level counts. Love et al. have provided a vignette describing how to circumvent this issue using the tximport package, however sleuth was written specifcally for Kallisto data, and so it seems appropriate to just switch gears and use that. Here, I'll document my first foray into sleuth. 
+
+*Initialize packages*
+```{r include=FALSE}
+source("http://bioconductor.org/biocLite.R")
+# Only need to install these packages once... do this from sudo R session in terminal
+##biocLite("devtools")
+##biocLite("pachterlab/sleuth")
+##biocLite("rhdf5")
+##biocLite("shinyapp")
+
+library("dplyr")
+library("sleuth")
+library("rhdf5")
+library("devtools")
+library("shiny")
+```
+
+*Intros and manuals*
+```{r}
+vignette('intro', package = 'sleuth')
+help(package = 'sleuth')
+```
+
+Also see:
+
+[GitHub](https://github.com/pachterlab/sleuth)
+[Pachter Lab](https://pachterlab.github.io/sleuth/)
+
+*Getting kallisto data organized*
+```
+# 1. Copied kallisto data from ~/Dimensions/R_analyses/Monoculture_Expression_Data to ~/Dimensions/Monocultures (orig. intact!)
+scp -r ./Data/ /home/cagood/Dimensions/Monocultures/
+
+# 2. Renamed directory to mono_expr_data
+mv Data/ mono_expr_data
+
+# 3. Changed kallisto output directories from 'kallisto_t0_r1' etc. to 'DC10_t0_r1' etc... NOTE: do this for each species!
+rename 's/kallisto/DC10/' kallisto_*/
+
+# 4. Find and delete empty directories below current dir
+find . -type d -empty -print
+find . -type d -empty -delete
+
+# Now each monoculture has specifically-named kallisto output data.
+```
+
+*Read in data*
+```{r}
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/01")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/01",sample_id)
+
+# Construct a metadata table
+metadata = data.frame(
+  condition = c("T1","T1","T1",
+                "T3","T3","T3",
+                "T5","T5","T5"),
+  sample = sample_id,
+  path = as.character(kal_dirs))
+
+metadata = data.frame(lapply(metadata, as.character), stringsAsFactors = FALSE)
+```
+
+*Construct a sleuth object*
+```{r}
+# Subset T1/T3 values
+T1T3 = dplyr::select(metadata[1:6,], sample, condition, path)
+
+# Construct the sleuth object
+so_T1T3 = sleuth_prep(T1T3)
+```
+
+*Fit the full and reduced models*
+```{r}
+so_T1T3 = sleuth_fit(so_T1T3, ~condition, 'full')
+so_T1T3 = sleuth_fit(so_T1T3, ~1, 'reduced')
+
+# Check fit models
+models(so_T1T3)
+```
+
+*Perform the test*
+```{r}
+so_T1T3 = sleuth_lrt(so_T1T3, 'reduced', 'full')
+```
+
+*Examine results*
+```{r}
+sleuth_table <- sleuth_results(so_T1T3, 'reduced:full', 'lrt', show_all = FALSE)
+sleuth_significant <- dplyr::filter(sleuth_table, qval <= 0.05)
+head(sleuth_significant, 20)
+```
+
+*Visualize in Shiny*
+```{r}
+## sleuth_live(so_T1T3) # Not working... might need to email Pachter lab.
+```
+
+Okay - this first run was heartening, I managed to get data! What's more, it's simple enough to read in and subset multiple conditions. Downside is that I'm unable to access the Shiny app here - maybe I can solve this by running it on my laptop; Chuck suggested that Benthos doesn't always play nice with outside servers. 
+
+Before commiting to sleuth, I should return to DESeq2 and try the tximport package, and then compare the results to what I see here. Sleuth appears to be very conservative, returning only 901 'significant' hits when comparing T3 to T1, compared to several thousand with DESeq2. When I add all three timepoints however, I see ~7k sig hits... I need to get into the actual statistics and figure out what I'm really doing here. 
+
+In addition, I've found [this](http://www.nxn.se/valent/timecourse-analysis-with-sleuth) vignette describing timecourse analysis - I'll test that workflow in part ii. 

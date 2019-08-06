@@ -1,0 +1,161 @@
+---
+title: "Venns"
+output: html_notebook
+---
+
+```{r}
+library(VennDiagram)
+```
+
+
+Using venn diagrams to identify sets of *significant* DE across the 3 time pairs, using "codex" files containing ONLY common orthogroups.
+
+
+**DC10**
+
+```{r}
+# Read in 
+DC10 = read.csv("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/DC10_DE_Codex")
+```
+
+GOAL: Loop this! See loop_in_and_multiplot.Rmd
+
+In the meantime, make a list of vectors containing NODE#s which are above threshold at TP1, TP2, and TP3
+
+```{r}
+# using subset function 
+TP1DE = as.vector(unlist(subset(DC10, sleuth.tp1_qval <= 0.1, select = c(ID))))
+TP2DE = as.vector(unlist(subset(DC10, sleuth.tp2_qval <= 0.1, select = c(ID))))
+TP3DE = as.vector(unlist(subset(DC10, sleuth.tp3_qval <= 0.1, select = c(ID))))
+
+DE_by_TP = list(TP1DE, TP2DE, TP3DE)
+
+tmp = calculate.overlap(DE_by_TP)
+```
+
+Now, make a Venn? I guess?
+
+```{r}
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC10_simple.tiff",
+             fill=rainbow(3),
+             main = "DC10: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+
+calculate.overlap(DE_by_TP)
+```
+
+**The Rest**
+
+```{r DC20}
+# USING P VALUES
+codex = read.csv("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/DC20_DE_Codex")
+
+TP1DE = as.vector(unlist(subset(codex, sleuth.tp1_pval <= 0.1, select = c(ID))))
+TP2DE = as.vector(unlist(subset(codex, sleuth.tp2_pval <= 0.1, select = c(ID))))
+TP3DE = as.vector(unlist(subset(codex, sleuth.tp3_pval <= 0.1, select = c(ID))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC20_simple.tiff",
+             fill=rainbow(3),
+             main = "DC20: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC30}
+codex = read.csv("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/DC30_DE_Codex")
+
+TP1DE = as.vector(unlist(subset(codex, sleuth.tp1_qval <= 0.1, select = c(ID))))
+TP2DE = as.vector(unlist(subset(codex, sleuth.tp2_qval <= 0.1, select = c(ID))))
+TP3DE = as.vector(unlist(subset(codex, sleuth.tp3_qval <= 0.1, select = c(ID))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC30_simple.tiff",
+             fill=rainbow(3),
+             main = "DC30: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC40}
+codex = read.csv("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/DC40_DE_Codex")
+
+TP1DE = as.vector(unlist(subset(codex, sleuth.tp1_qval <= 0.1, select = c(ID))))
+TP2DE = as.vector(unlist(subset(codex, sleuth.tp2_qval <= 0.1, select = c(ID))))
+TP3DE = as.vector(unlist(subset(codex, sleuth.tp3_qval <= 0.1, select = c(ID))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC40_simple.tiff",
+             fill=rainbow(3),
+             main = "DC40: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC50}
+codex = read.csv("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/DC50_DE_Codex")
+
+TP1DE = as.vector(unlist(subset(codex, sleuth.tp1_qval <= 0.1, select = c(ID))))
+TP2DE = as.vector(unlist(subset(codex, sleuth.tp2_qval <= 0.1, select = c(ID))))
+TP3DE = as.vector(unlist(subset(codex, sleuth.tp3_qval <= 0.1, select = c(ID))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC50_simple.tiff",
+             fill=rainbow(3),
+             main = "DC50: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC60}
+codex = read.csv("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/DC60_DE_Codex")
+
+TP1DE = as.vector(unlist(subset(codex, sleuth.tp1_qval <= 0.1, select = c(ID))))
+TP2DE = as.vector(unlist(subset(codex, sleuth.tp2_qval <= 0.1, select = c(ID))))
+TP3DE = as.vector(unlist(subset(codex, sleuth.tp3_qval <= 0.1, select = c(ID))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC60_simple.tiff",
+             fill=rainbow(3),
+             main = "DC60: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC70}
+codex = read.csv("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/DC70_DE_Codex")
+
+TP1DE = as.vector(unlist(subset(codex, sleuth.tp1_qval <= 0.1, select = c(ID))))
+TP2DE = as.vector(unlist(subset(codex, sleuth.tp2_qval <= 0.1, select = c(ID))))
+TP3DE = as.vector(unlist(subset(codex, sleuth.tp3_qval <= 0.1, select = c(ID))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC70_simple.tiff",
+             fill=rainbow(3),
+             main = "DC70: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC80}
+#USING P VALUES
+
+codex = read.csv("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/DC80_DE_Codex")
+
+TP1DE = as.vector(unlist(subset(codex, sleuth.tp1_pval <= 0.1, select = c(ID))))
+TP2DE = as.vector(unlist(subset(codex, sleuth.tp2_pval <= 0.1, select = c(ID))))
+TP3DE = as.vector(unlist(subset(codex, sleuth.tp3_pval <= 0.1, select = c(ID))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC80_simple.tiff",
+             fill=rainbow(3),
+             main = "DC80: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+***
+

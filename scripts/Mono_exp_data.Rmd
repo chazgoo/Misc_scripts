@@ -1,0 +1,448 @@
+---
+title: "Monoculture Expression Data"
+author: Charles Goodman
+output: html_notebook
+---
+
+Organizing Kallisto data for the DIMENSIONS monocultures - count data was copied from benthos:/home/twood1/Dimensions/Monoculture0X/kallisto_tX_rX into local directory 'Data'. 
+
+The following 8 blocks each do the following:
+1. Read in all kallisto abundance.tsv output files for a given species as a list of dataframes
+2. Subset columns 1, 4, and 5 - name, estimated counts, and tpm
+3. Rename the dataframes for each timepoint/repeat for legibility
+4. Extract values from each timepoint/repeat, and merge them into a single new dataframe
+5. Rename columns to reflect origin of data
+
+```{r DC10}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("~/Dimensions/Kallistos/DC10/", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC10_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+dfnames <- c("DC10_R1T0", 
+             "DC10_R1T3", 
+             "DC10_R1T5", 
+             "DC10_R1T6",
+             "DC10_R2T0", 
+             "DC10_R2T3", 
+             "DC10_R2T5", 
+             "DC10_R2T6",
+             "DC10_R3T0", 
+             "DC10_R3T3", 
+             "DC10_R3T5", 
+             "DC10_R3T6")
+
+DC10_dfList <- setNames(DC10_dfList, gsub(".tsv", "", dfnames))
+
+## IN CASE YOU REALLY NEED INDIVIDUAL DFs
+# list2env(dfList, envir=.GlobalEnv)
+
+## IN CASE YOU NEED TO APPEND ALL DFs
+# finaldf <- do.call(rbind, dfList)
+
+## TO RETRIEVE A DF
+# DC10_dfList[["DC10_T0_R1"]] # can index by column/row via adding [x,y]!
+
+# Obtain a table with est_counts and tpm from all dataframes
+DC10_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC10_dfList)
+colnames(DC10_expression) <- c("ID",
+                              "R1T0.ec", "R1T0.tpm",
+                              "R1T3.ec", "R1T3.tpm",
+                              "R1T5.ec", "R1T5.tpm",
+                              "R1T6.ec", "R1T6.tpm",
+                              "R2T0.ec", "R2T0.tpm",
+                              "R2T3.ec", "R2T3.tpm",
+                              "R2T5.ec", "R2T5.tpm",
+                              "R2T6.ec", "R2T6.tpm",
+                              "R3T0.ec", "R3T0.tpm",
+                              "R3T3.ec", "R3T3.tpm",
+                              "R3T5.ec", "R3T5.tpm",
+                              "R3T6.ec", "R3T6.tpm")
+
+write.csv(DC10_expression, 'DC10_expression.csv')
+```
+
+```{r DC20}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("~/Dimensions/Kallistos/DC20/", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC20_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+dfnames <- c("DC20_R1T1", 
+             "DC20_R1T4", 
+             "DC20_R1T5", 
+             "DC20_R1T6",
+             "DC20_R2T1", 
+             "DC20_R2T4", 
+             "DC20_R2T5", 
+             "DC20_R2T6",
+             "DC20_R3T5", 
+             "DC20_R3T6")
+
+DC20_dfList <- setNames(DC20_dfList, gsub(".tsv", "", dfnames))
+
+## IN CASE YOU REALLY NEED INDIVIDUAL DFs
+# list2env(dfList, envir=.GlobalEnv)
+
+## IN CASE YOU NEED TO APPEND ALL DFs
+# finaldf <- do.call(rbind, dfList)
+
+## TO RETRIEVE A DF
+# DC20_dfList[["DC20_T0_R1"]] # can index by column/row via adding [x,y]!
+
+# Obtain a table with est_counts and tpm from all dataframes
+DC20_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC20_dfList)
+colnames(DC20_expression) <- c("ID",
+                              "R1T1.ec", "R1T1.tpm",
+                              "R1T4.ec", "R1T4.tpm",
+                              "R1T5.ec", "R1T5.tpm",
+                              "R1T6.ec", "R1T6.tpm",
+                              "R2T1.ec", "R2T1.tpm",
+                              "R2T4.ec", "R2T4.tpm",
+                              "R2T5.ec", "R2T5.tpm",
+                              "R2T6.ec", "R2T6.tpm",
+                              "R3T5.ec", "R3T5.tpm",
+                              "R3T6.ec", "R3T6.tpm")
+
+write.csv(DC20_expression, 'DC20_expression.csv')
+```
+
+```{r DC30}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("~/Dimensions/Kallistos/DC30/", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC30_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+dfnames <- c("DC30_R1T1", 
+             "DC30_R1T3", 
+             "DC30_R1T5", 
+             "DC30_R1T6",
+             "DC30_R2T1", 
+             "DC30_R2T3", 
+             "DC30_R2T5", 
+             "DC30_R2T6",
+             "DC30_R3T1", 
+             "DC30_R3T3", 
+             "DC30_R3T5", 
+             "DC30_R3T6")
+
+DC30_dfList <- setNames(DC30_dfList, gsub(".tsv", "", dfnames))
+
+## IN CASE YOU REALLY NEED INDIVIDUAL DFs
+# list2env(dfList, envir=.GlobalEnv)
+
+## IN CASE YOU NEED TO APPEND ALL DFs
+# finaldf <- do.call(rbind, dfList)
+
+## TO RETRIEVE A DF
+# DC10_dfList[["DC10_T0_R1"]] # can index by column/row via adding [x,y]!
+
+# Obtain a table with est_counts and tpm from all dataframes
+DC30_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC30_dfList)
+colnames(DC30_expression) <- c("ID",
+                              "R1T1.ec", "R1T1.tpm",
+                              "R1T3.ec", "R1T3.tpm",
+                              "R1T5.ec", "R1T5.tpm",
+                              "R1T6.ec", "R1T6.tpm",
+                              "R2T1.ec", "R2T1.tpm",
+                              "R2T3.ec", "R2T3.tpm",
+                              "R2T5.ec", "R2T5.tpm",
+                              "R2T6.ec", "R2T6.tpm",
+                              "R3T1.ec", "R3T1.tpm",
+                              "R3T3.ec", "R3T3.tpm",
+                              "R3T5.ec", "R3T5.tpm",
+                              "R3T6.ec", "R3T6.tpm")
+
+write.csv(DC30_expression, 'DC30_expression.csv')
+```
+
+```{r DC40}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("~/Dimensions/Kallistos/DC40/", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC40_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+dfnames <- c("DC40_R1T2", 
+             "DC40_R1T4", 
+             "DC40_R1T6", 
+             "DC40_R1TY",
+             "DC40_R2T2", 
+             "DC40_R2T4", 
+             "DC40_R2T6", 
+             "DC40_R2TY",
+             "DC40_R3T2", 
+             "DC40_R3T4", 
+             "DC40_R3T6", 
+             "DC40_R3TY")
+
+DC40_dfList <- setNames(DC40_dfList, gsub(".tsv", "", dfnames))
+
+## IN CASE YOU REALLY NEED INDIVIDUAL DFs
+# list2env(dfList, envir=.GlobalEnv)
+
+## IN CASE YOU NEED TO APPEND ALL DFs
+# finaldf <- do.call(rbind, dfList)
+
+## TO RETRIEVE A DF
+# DC10_dfList[["DC10_T0_R1"]] # can index by column/row via adding [x,y]!
+
+# Obtain a table with est_counts and tpm from all dataframes
+DC40_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC40_dfList)
+colnames(DC40_expression) <- c("ID",
+                              "R1T2.ec", "R1T2.tpm",
+                              "R1T4.ec", "R1T4.tpm",
+                              "R1T6.ec", "R1T6.tpm",
+                              "R1TY.ec", "R1TY.tpm",
+                              "R2T2.ec", "R2T2.tpm",
+                              "R2T4.ec", "R2T4.tpm",
+                              "R2T6.ec", "R2T6.tpm",
+                              "R2TY.ec", "R2TY.tpm",
+                              "R3T2.ec", "R3T2.tpm",
+                              "R3T4.ec", "R3T4.tpm",
+                              "R3T6.ec", "R3T6.tpm",
+                              "R3TY.ec", "R3TY.tpm")
+
+write.csv(DC40_expression, 'DC40_expression.csv')
+```
+
+```{r DC50}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("~/Dimensions/Kallistos/DC50/", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC50_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+dfnames <- c("DC50_R1T3", 
+             "DC50_R1T5", 
+             "DC50_R1TWB",
+             "DC50_R2T2", 
+             "DC50_R2T3", 
+             "DC50_R2T5", 
+             "DC50_R2TWB",
+             "DC50_R3T2", 
+             "DC50_R3T3", 
+             "DC50_R3T5", 
+             "DC50_R3TWB")
+
+DC50_dfList <- setNames(DC50_dfList, gsub(".tsv", "", dfnames))
+
+## IN CASE YOU REALLY NEED INDIVIDUAL DFs
+# list2env(dfList, envir=.GlobalEnv)
+
+## IN CASE YOU NEED TO APPEND ALL DFs
+# finaldf <- do.call(rbind, dfList)
+
+## TO RETRIEVE A DF
+# DC10_dfList[["DC10_T0_R1"]] # can index by column/row via adding [x,y]!
+
+# Obtain a table with est_counts and tpm from all dataframes
+DC50_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC50_dfList)
+colnames(DC50_expression) <- c("ID",
+                              "R1T3.ec", "R1T3.tpm",
+                              "R1T5.ec", "R1T5.tpm",
+                              "R1TWB.ec", "R1TWB.tpm",
+                              "R2T2.ec", "R2T2.tpm",
+                              "R2T3.ec", "R2T3.tpm",
+                              "R2T5.ec", "R2T5.tpm",
+                              "R2TWB.ec", "R2TWB.tpm",
+                              "R3T2.ec", "R3T2.tpm",
+                              "R3T3.ec", "R3T3.tpm",
+                              "R3T5.ec", "R3T5.tpm",
+                              "R3TWB.ec", "R3TWB.tpm")
+
+write.csv(DC50_expression, 'DC50_expression.csv')
+```
+
+```{r DC60}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("~/Dimensions/Kallistos/DC60/", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC60_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+dfnames <- c("DC60_R1T2", 
+             "DC60_R1T3", 
+             "DC60_R1T5", 
+             "DC60_R1T6",
+             "DC60_R2T2", 
+             "DC60_R2T3", 
+             "DC60_R2T5", 
+             "DC60_R2T6",
+             "DC60_R3T2", 
+             "DC60_R3T3", 
+             "DC60_R3T5", 
+             "DC60_R3T6")
+
+DC60_dfList <- setNames(DC60_dfList, gsub(".tsv", "", dfnames))
+
+## IN CASE YOU REALLY NEED INDIVIDUAL DFs
+# list2env(dfList, envir=.GlobalEnv)
+
+## IN CASE YOU NEED TO APPEND ALL DFs
+# finaldf <- do.call(rbind, dfList)
+
+## TO RETRIEVE A DF
+# DC10_dfList[["DC10_T0_R1"]] # can index by column/row via adding [x,y]!
+
+# Obtain a table with est_counts and tpm from all dataframes
+DC60_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC60_dfList)
+colnames(DC60_expression) <- c("ID",
+                              "R1T2.ec", "R1T2.tpm",
+                              "R1T3.ec", "R1T3.tpm",
+                              "R1T5.ec", "R1T5.tpm",
+                              "R1T6.ec", "R1T6.tpm",
+                              "R2T2.ec", "R2T2.tpm",
+                              "R2T3.ec", "R2T3.tpm",
+                              "R2T5.ec", "R2T5.tpm",
+                              "R2T6.ec", "R2T6.tpm",
+                              "R3T2.ec", "R3T2.tpm",
+                              "R3T3.ec", "R3T3.tpm",
+                              "R3T5.ec", "R3T5.tpm",
+                              "R3T6.ec", "R3T6.tpm")
+
+write.csv(DC60_expression, 'DC60_expression.csv')
+```
+
+```{r DC70}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("~/Dimensions/Kallistos/DC70/", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC70_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+dfnames <- c("DC70_R1T1", 
+             "DC70_R1T4", 
+             "DC70_R1TWB", 
+             "DC70_R1T1",
+             "DC70_R2T4", 
+             "DC70_R2T6", 
+             "DC70_R2TY", 
+             "DC70_R2T1",
+             "DC70_R3T4", 
+             "DC70_R3TWB", 
+             "DC70_R3TY")
+
+DC70_dfList <- setNames(DC70_dfList, gsub(".tsv", "", dfnames))
+
+## IN CASE YOU REALLY NEED INDIVIDUAL DFs
+# list2env(dfList, envir=.GlobalEnv)
+
+## IN CASE YOU NEED TO APPEND ALL DFs
+# finaldf <- do.call(rbind, dfList)
+
+## TO RETRIEVE A DF
+# DC10_dfList[["DC10_T0_R1"]] # can index by column/row via adding [x,y]!
+
+# Obtain a table with est_counts and tpm from all dataframes
+DC70_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC70_dfList)
+colnames(DC70_expression) <- c("ID",
+                              "R1T1.ec", "R1T1.tpm",
+                              "R1T4.ec", "R1T4.tpm",
+                              "R1TWB.ec", "R1TWB.tpm",
+                              "R1T1.ec", "R1T1.tpm",
+                              "R2T4.ec", "R2T4.tpm",
+                              "R2T6.ec", "R2T6.tpm",
+                              "R2TY.ec", "R2TY.tpm",
+                              "R2T1.ec", "R2T1.tpm",
+                              "R3T4.ec", "R3T4.tpm",
+                              "R3TWB.ec", "R3TWB.tpm",
+                              "R3TY.ec", "R3TY.tpm")
+
+write.csv(DC70_expression, 'DC70_expression.csv')
+```
+
+```{r DC80}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("~/Dimensions/Kallistos/DC80/", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC80_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+dfnames <- c("DC80_R1T1", 
+             "DC80_R1T2", 
+             "DC80_R1T4", 
+             "DC80_R1T6",
+             "DC80_R2T1", 
+             "DC80_R2T2", 
+             "DC80_R2T4", 
+             "DC80_R2T6",
+             "DC80_R3T1", 
+             "DC80_R3T2", 
+             "DC80_R3T4", 
+             "DC80_R3T6")
+
+DC80_dfList <- setNames(DC80_dfList, gsub(".tsv", "", dfnames))
+
+## IN CASE YOU REALLY NEED INDIVIDUAL DFs
+# list2env(dfList, envir=.GlobalEnv)
+
+## IN CASE YOU NEED TO APPEND ALL DFs
+# finaldf <- do.call(rbind, dfList)
+
+## TO RETRIEVE A DF
+# DC10_dfList[["DC10_T0_R1"]] # can index by column/row via adding [x,y]!
+
+# Obtain a table with est_counts and tpm from all dataframes
+DC80_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC80_dfList)
+colnames(DC80_expression) <- c("ID",
+                              "R1T1.ec", "R1T1.tpm",
+                              "R1T2.ec", "R1T2.tpm",
+                              "R1T4.ec", "R1T4.tpm",
+                              "R1T6.ec", "R1T6.tpm",
+                              "R2T1.ec", "R2T1.tpm",
+                              "R2T2.ec", "R2T2.tpm",
+                              "R2T4.ec", "R2T4.tpm",
+                              "R2T6.ec", "R2T6.tpm",
+                              "R3T1.ec", "R3T1.tpm",
+                              "R3T2.ec", "R3T2.tpm",
+                              "R3T4.ec", "R3T4.tpm",
+                              "R3T6.ec", "R3T6.tpm")
+
+write.csv(DC80_expression, 'DC80_expression.csv')
+```
+
+The next step I'd like is to perform the same transformation that Tim used to obtain log difference for timepoints 1, n-1, and n. I have differing timepoints here, and a couple of sets only have two... so I'm not sure exactly how to procede. I could also do DE analysis across timepoints - would have to figure out a way to link Orthologs across species though. I do have a list!

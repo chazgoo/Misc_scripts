@@ -1,0 +1,184 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(VennDiagram)
+```
+
+
+```{r DC10}
+timepair1 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC10_pairwise/DC10_tp1_sleuth.csv"
+timepair2 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC10_pairwise/DC10_tp2_sleuth.csv"
+timepair3 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC10_pairwise/DC10_tp3_sleuth.csv"
+
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+tp3 = read.csv(timepair3, header=T)
+
+TP1DE = as.vector(unlist(subset(tp1, qval <= 0.1, select = c(target_id))))
+TP2DE = as.vector(unlist(subset(tp2, qval <= 0.1, select = c(target_id))))
+TP3DE = as.vector(unlist(subset(tp3, qval <= 0.1, select = c(target_id))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC10_all.tiff",
+             fill=rainbow(3),
+             main = "DC10: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC20}
+#USING P VALS
+
+timepair1 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC20_pairwise/DC20_tp1_sleuth.csv"
+timepair2 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC20_pairwise/DC20_tp2_sleuth.csv"
+timepair3 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC20_pairwise/DC20_tp3_sleuth.csv"
+
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+tp3 = read.csv(timepair3, header=T)
+
+TP1DE = as.vector(unlist(subset(tp1, pval <= 0.1, select = c(target_id))))
+TP2DE = as.vector(unlist(subset(tp2, pval <= 0.1, select = c(target_id))))
+TP3DE = as.vector(unlist(subset(tp3, pval <= 0.1, select = c(target_id))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC20_all.tiff",
+             fill=rainbow(3),
+             main = "DC20: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC30}
+timepair1 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC30_pairwise/DC30_tp1_sleuth.csv"
+timepair2 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC30_pairwise/DC30_tp2_sleuth.csv"
+timepair3 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC30_pairwise/DC30_tp3_sleuth.csv"
+
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+tp3 = read.csv(timepair3, header=T)
+
+TP1DE = as.vector(unlist(subset(tp1, qval <= 0.1, select = c(target_id))))
+TP2DE = as.vector(unlist(subset(tp2, qval <= 0.1, select = c(target_id))))
+TP3DE = as.vector(unlist(subset(tp3, qval <= 0.1, select = c(target_id))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC30_all.tiff",
+             fill=rainbow(3),
+             main = "DC30: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC40}
+timepair1 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC40_pairwise/DC40_tp1_sleuth.csv"
+timepair2 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC40_pairwise/DC40_tp2_sleuth.csv"
+timepair3 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC40_pairwise/DC40_tp3_sleuth.csv"
+
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+tp3 = read.csv(timepair3, header=T)
+
+TP1DE = as.vector(unlist(subset(tp1, qval <= 0.1, select = c(target_id))))
+TP2DE = as.vector(unlist(subset(tp2, qval <= 0.1, select = c(target_id))))
+TP3DE = as.vector(unlist(subset(tp3, qval <= 0.1, select = c(target_id))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC40_all.tiff",
+             fill=rainbow(3),
+             main = "DC40: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC50}
+timepair1 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC50_pairwise/DC50_tp1_sleuth.csv"
+timepair2 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC50_pairwise/DC50_tp2_sleuth.csv"
+timepair3 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC50_pairwise/DC50_tp3_sleuth.csv"
+
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+tp3 = read.csv(timepair3, header=T)
+
+TP1DE = as.vector(unlist(subset(tp1, qval <= 0.1, select = c(target_id))))
+TP2DE = as.vector(unlist(subset(tp2, qval <= 0.1, select = c(target_id))))
+TP3DE = as.vector(unlist(subset(tp3, qval <= 0.1, select = c(target_id))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC50_all.tiff",
+             fill=rainbow(3),
+             main = "DC50: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+             )
+```
+
+```{r DC60}
+timepair1 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC60_pairwise/DC60_tp1_sleuth.csv"
+timepair2 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC60_pairwise/DC60_tp2_sleuth.csv"
+timepair3 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC60_pairwise/DC60_tp3_sleuth.csv"
+
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+tp3 = read.csv(timepair3, header=T)
+
+TP1DE = as.vector(unlist(subset(tp1, qval <= 0.1, select = c(target_id))))
+TP2DE = as.vector(unlist(subset(tp2, qval <= 0.1, select = c(target_id))))
+TP3DE = as.vector(unlist(subset(tp3, qval <= 0.1, select = c(target_id))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC60_all.tiff",
+             fill=rainbow(3),
+             main = "DC60: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+)
+    
+```
+
+```{r DC70}
+timepair1 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC70_pairwise/DC70_tp1_sleuth.csv"
+timepair2 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC70_pairwise/DC70_tp2_sleuth.csv"
+timepair3 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC70_pairwise/DC70_tp3_sleuth.csv"
+
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+tp3 = read.csv(timepair3, header=T)
+
+TP1DE = as.vector(unlist(subset(tp1, qval <= 0.1, select = c(target_id))))
+TP2DE = as.vector(unlist(subset(tp2, qval <= 0.1, select = c(target_id))))
+TP3DE = as.vector(unlist(subset(tp3, qval <= 0.1, select = c(target_id))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC70_all.tiff",
+             fill=rainbow(3),
+             main = "DC70: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+)
+    
+```
+
+```{r DC80}
+#USING P VAL
+
+timepair1 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC80_pairwise/DC80_tp1_sleuth.csv"
+timepair2 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC80_pairwise/DC80_tp2_sleuth.csv"
+timepair3 = "/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis//DC80_pairwise/DC80_tp3_sleuth.csv"
+
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+tp3 = read.csv(timepair3, header=T)
+
+TP1DE = as.vector(unlist(subset(tp1, pval <= 0.1, select = c(target_id))))
+TP2DE = as.vector(unlist(subset(tp2, pval <= 0.1, select = c(target_id))))
+TP3DE = as.vector(unlist(subset(tp3, pval <= 0.1, select = c(target_id))))
+
+venn.diagram(x = list(A=TP1DE,B=TP2DE,C=TP3DE),
+             "/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/venns/DC80_all.tiff",
+             fill=rainbow(3),
+             main = "DC80: #DEGs by Timepair", 
+             category.names = c("T1/T2","T2/T3","T3/T4")
+)
+    
+```

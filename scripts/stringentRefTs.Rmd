@@ -1,0 +1,83 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+species = c("DC10","DC20","DC30","DC40","DC50","DC60","DC70","DC80")
+
+for (i in 1:8){
+  name = species[i]
+  
+  # Set paths
+  path1 = paste0("../../Rosettas/",species[i],"_PyRos.csv")
+  path2 = paste0("uniqIDs/",species[i],"_uniqIDs")
+  
+  # Read in PyRos and Unique ID files  
+  PyRos = read.csv(path1)
+  uniqIDs = as.data.frame(scan(path2, what="", sep="\n"))
+  colnames(uniqIDs) <- "ID"
+  
+  # Drop nongreen rows
+  Stringent = PyRos %>% drop_na(BlastID)
+  
+  # Filter redundant rows
+  Stringent = merge(Stringent, uniqIDs, by.x = "ID", by.y = "ID", all.x = F, all.y = F)
+  
+  # Filter partial transcripts
+  Stringent = Stringent[grep("complete|internal", Stringent$Type),]
+  
+  out = Stringent 
+  assign(name, out)
+}
+
+out = NULL
+PyRos = NULL
+Stringent = NULL
+uniqIDs = NULL
+```
+
+```{r}
+cat(sapply(DC10$NODE, toString), file = "./UGC_IDs/DC10_UGC_IDs.txt", sep="\n")
+cat(sapply(DC20$NODE, toString), file = "./UGC_IDs/DC20_UGC_IDs.txt", sep="\n")
+cat(sapply(DC30$NODE, toString), file = "./UGC_IDs/DC30_UGC_IDs.txt", sep="\n")
+cat(sapply(DC40$NODE, toString), file = "./UGC_IDs/DC40_UGC_IDs.txt", sep="\n")
+cat(sapply(DC50$NODE, toString), file = "./UGC_IDs/DC50_UGC_IDs.txt", sep="\n")
+cat(sapply(DC60$NODE, toString), file = "./UGC_IDs/DC60_UGC_IDs.txt", sep="\n")
+cat(sapply(DC70$NODE, toString), file = "./UGC_IDs/DC70_UGC_IDs.txt", sep="\n")
+cat(sapply(DC80$NODE, toString), file = "./UGC_IDs/DC80_UGC_IDs.txt", sep="\n")
+```
+
+```{r, engine = 'bash'}
+cd ~/Dimensions/ReferenceTranscriptomes/stringent
+
+perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ./UGC_IDs/DC10_UGC_IDs.txt /home/cagood/Dimensions/ReferenceTranscriptomes/unsorted/DC10_transcripts.fasta > ./DC10_stringent.fa
+
+perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ./UGC_IDs/DC20_UGC_IDs.txt /home/cagood/Dimensions/ReferenceTranscriptomes/unsorted/DC20_transcripts.fasta > ./DC20_stringent.fa
+
+perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ./UGC_IDs/DC30_UGC_IDs.txt /home/cagood/Dimensions/ReferenceTranscriptomes/unsorted/DC30_transcripts.fasta > ./DC30_stringent.fa
+
+perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ./UGC_IDs/DC40_UGC_IDs.txt /home/cagood/Dimensions/ReferenceTranscriptomes/unsorted/DC40_transcripts.fasta > ./DC40_stringent.fa
+
+perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ./UGC_IDs/DC50_UGC_IDs.txt /home/cagood/Dimensions/ReferenceTranscriptomes/unsorted/DC50_transcripts.fasta > ./DC50_stringent.fa
+
+perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ./UGC_IDs/DC60_UGC_IDs.txt /home/cagood/Dimensions/ReferenceTranscriptomes/unsorted/DC60_transcripts.fasta > ./DC60_stringent.fa
+
+perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ./UGC_IDs/DC70_UGC_IDs.txt /home/cagood/Dimensions/ReferenceTranscriptomes/unsorted/DC70_transcripts.fasta > ./DC70_stringent.fa
+
+perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ./UGC_IDs/DC80_UGC_IDs.txt /home/cagood/Dimensions/ReferenceTranscriptomes/unsorted/DC80_transcripts.fasta > ./DC80_stringent.fa
+```
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,118 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+I want to employ upset plots (as suggested by SM) in leu of venn diagrams. To do so, I'll try [UpSetR](https://caleydo.org/tools/upset/); [GitHub](https://github.com/hms-dbmi/UpSetR).
+
+```{r}
+library(UpSetR)
+```
+
+There are a lot of options as to what I can plot, so I'll start with a proof-of-concept: showing orthology across all 8 species, in terms of presence of orthogroups. 
+
+```{r}
+# Plotting OrthoGroup overlap
+
+# Get a list of unique orthogroups for each species (ignoring repeats/isotypes)
+species = c("DC10","DC20","DC30","DC40","DC50","DC60","DC70","DC80")
+
+for (i in 1:8){
+  name = species[i]
+  
+  path = paste0("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_mono/",species[i],"_Rosetta.csv")
+  rosetta = read.csv(file = path)
+  
+  out = unique(rosetta$OG)
+  assign(name, out)
+}
+
+# Make a list of those lists
+ListInput = list(C.sorokiniana = DC10, 
+                 C.acicularis = DC20,
+                 C.turpinii = DC30,
+                 P.charkowiensis = DC40,
+                 S.acuminatus = DC50,
+                 R.subcapitata = DC60,
+                 S.puntulatum = DC70,
+                 T.minimum = DC80)
+```
+
+```{r}
+# List input
+## png("upset.png")
+
+upset(fromList(ListInput), 
+      nsets = 8, 
+      order.by = "freq", 
+      number.angles = 40,
+      mainbar.y.label = "Common Orthogroup Intersection",
+      sets.x.label = "Orthogroups per species",
+      query.legend = "top",
+      queries = list(
+        list(query = intersects, params = list("C.turpinii","S.puntulatum"), color = "orange", active = T, query.name = "Charophyceae"),
+        list(query = intersects, params = list("C.sorokiniana","C.acicularis","P.charkowiensis","S.acuminatus","R.subcapitata","T.minimum"), color = "blue", active = T, query.name = "Chlorophyceae"))
+)
+
+## dev.off()
+
+```
+
+
+***
+
+
+```{r}
+
+# A contingency table might be more easily manipulated?
+
+# Loop that shit in
+species = c("DC10","DC20","DC30","DC40","DC50","DC60","DC70","DC80")
+fullnames = c("C.sorokiniana", "C.acicularis", "C.turpinii" ,"P.charkowiensis" ,"S.acuminatus" ,"R.subcapitata" ,"S.puntulatum" ,"T.minimum" )
+
+for (i in 1:8){
+  name = species[i]
+  
+  path = paste0("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_mono/",species[i],"_Rosetta.csv")
+  rosetta = read.csv(file = path)
+  
+  uniqueOGs = unique(rosetta$OG) # Right now ignore metadata, just use Unique OGs
+  df = data.frame(matrix(unlist(uniqueOGs), nrow=length(uniqueOGs), byrow=T))
+  colnames(df)[1] = "OG"
+  df = cbind(spec = fullnames[i], df)
+  out = df
+  assign(name, out)
+}
+
+longdf = rbind(DC10,DC20,DC30,DC40,DC50,DC60,DC70,DC80)
+TableInput = data.frame(t(as.data.frame.matrix(table(longdf)))) # Kinda wacky, but it does the thing. 
+TableInput <- cbind(OGs = rownames(TableInput), TableInput)
+row.names(TableInput) = NULL
+```
+
+
+Using a table for input makes it more easy to manipulate the resulting plots, can include metadata etc... Play with this later. 
+
+```{r}
+# Table Input
+pdf("upset2.pdf")
+
+upset(TableInput, 
+      sets = c( "C.turpinii","S.puntulatum","C.sorokiniana","C.acicularis","P.charkowiensis","R.subcapitata" ,"S.acuminatus" ,"T.minimum"), #in phylo order
+      keep.order = T,
+      order.by = "freq",
+      mainbar.y.label = "Common Orthogroup Intersection",
+      sets.x.label = "Orthogroups per species",
+      query.legend = "top",
+      queries = list(
+        list(query = intersects, params = list("C.turpinii","S.puntulatum"), color = "orange", active = T, query.name = "Charophyceae"),
+        list(query = intersects, params = list("C.sorokiniana", "C.acicularis", "P.charkowiensis" ,"S.acuminatus" ,"R.subcapitata" ,"T.minimum" ), color = "blue", active = T, query.name = "Chlorophyceae"))
+)
+
+dev.off()
+
+upset(TableInput, nsets = 8) 
+```
+
+
+

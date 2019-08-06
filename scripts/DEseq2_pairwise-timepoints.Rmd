@@ -1,0 +1,91 @@
+---
+title: "DEseq2_pairwise-timepoints"
+author: Charles Goodman
+output: html_notebook
+---
+
+*Initialize packages*
+```{r include=FALSE}
+# Initializing DEseq
+
+source("https://bioconductor.org/biocLite.R")
+## biocLite("DESeq2")
+## biocLite("tximportData")
+## biocLite("tximport")
+## biocLite("rhdf5")
+
+# Packages - if unavailable use biocLite() from terminal in sudo R session
+library(dplyr)
+library(tibble)
+library(DESeq2)
+library(ggplot2)
+library(BiocParallel)
+library(tximportData)
+library(tximport)
+library(rhdf5)
+
+# Parallel operation
+register(MulticoreParam(8))
+```
+
+*Read in data*
+```{r include=FALSE}
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/01")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/01",sample_id, "abundance.h5")
+
+# Construct a metadata table
+metadata = data.frame(
+  condition = c("T1","T1","T1",
+                "T3","T3","T3",
+                "T5","T5","T5"),
+  sample = sample_id,
+  path = as.character(kal_dirs))
+
+metadata = data.frame(lapply(metadata, as.character), stringsAsFactors = FALSE)
+
+# Make a list of files
+files = kal_dirs[1:6]
+names(files) = sample_id[1:6]
+files
+
+# Make txi object
+txi.kal_DC10_T1T3 = tximport(files, type="kallisto", txOut=TRUE)
+```
+
+```{r include=FALSE}
+# Metadata table
+# Metadata for subsequent dds objects - prepare one for each 'counts' subset
+
+# T1T3
+coldat_T1T3 = data.frame(
+  row.names = sample_id[1:6],
+  condition = c("T1","T1","T1",
+                "T3","T3","T3"),
+  type = c("paired-end","paired-end","paired-end",
+           "paired-end","paired-end","paired-end"))
+```
+
+```{r}
+dds <- DESeqDataSetFromTximport(txi.kal_DC10_T1T3, coldat_T1T3, ~condition)
+
+dds = DESeq(dds)
+res = results(dds, contrast=c("condition","T3","T1")) #, alpha = 0.05) # Note: contrast uses args (condition, numerator, denominator)
+res= res[order(res$pvalue),]
+
+summary(res)
+```
+
+Volcano plots
+```{r}
+# Make a basic volcano plot
+with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot"))
+
+# Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
+with(subset(res, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+with(subset(res, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="orange"))
+with(subset(res, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
+
+```
+

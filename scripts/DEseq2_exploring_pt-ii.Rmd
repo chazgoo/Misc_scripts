@@ -1,0 +1,182 @@
+---
+title: "DEseq2: exploring, part ii"
+author: Charles Goodman
+output: html_notebook
+---
+
+Having worked through the basics of DESeq2 in part i, here I'll make an effort to tighten up the pipeline to be used for single-species analysis.
+
+Input:  A Rosetta file
+Output: A .csv of differentially (and constitutively) expressed genes for each consecutive pair of timepoints, and associated figures
+Next:   Use the .csv to filter the original Rosetta for gene IDs, and write a script to pull GO terms for each
+
+**Manuals & Pages**
+[DEseq Homepage](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)
+[Sample Workthrough](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
+[Full Manual](https://bioconductor.org/packages/release/bioc/manuals/DESeq2/man/DESeq2.pdf)
+
+## Packages and libaries
+```{r include=FALSE}
+# Initializing DEseq
+source("https://bioconductor.org/biocLite.R")
+biocLite("DESeq2")
+
+# Packages - if unavailable use biocLite() from terminal in sudo R session
+library(dplyr)
+library(tibble)
+library(DESeq2)
+library(ggplot2)
+library(BiocParallel)
+
+# Parallel operation
+register(MulticoreParam(8))
+```
+
+## Data initialization
+```{r}
+# Read in DC10_Rosetta.csv
+ros_file = read.csv(file = "/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs/DC10_Rosetta.csv", header = T)
+
+# Subset Rosetta data
+# Use ID column for names, and .ec columns for counts
+DC10_counts = select(ros_file,
+                     t0.r1.ec, t0.r2.ec, t0.r3.ec, 
+                     t3.r1.ec, t3.r2.ec, t3.r3.ec,
+                     t5.r1.ec, t5.r2.ec, t5.r3.ec)
+
+# Set ros_file ID column as list row_names
+row_names = ros_file$ID
+
+# Set count matrix values as integers (effectively, rounds down to nearest whole#)
+DC10_counts = sapply(DC10_counts[,1:9], as.integer)
+
+# Set count matrix row names = row_names
+rownames(DC10_counts) = row_names
+
+# Subset for each pair of consecutive timepoints
+DC10_T1T3 = DC10_counts[,1:6]
+DC10_T3T5 = DC10_counts[,4:9]
+```
+
+## Metadata initialization
+```{r}
+# Metadata for subsequent dds objects - prepare one for each 'counts' subset
+
+# T1T3
+coldat_T1T3 = data.frame(
+  row.names = colnames(DC10_T1T3),
+  condition = c("T1","T1","T1",
+                "T3","T3","T3"),
+  type = c("paired-end","paired-end","paired-end",
+           "paired-end","paired-end","paired-end"))
+
+# T3T5
+coldat_T3T5 = data.frame(
+  row.names = colnames(DC10_T3T5),
+  condition = c("T3","T3","T3",
+                "T5","T5","T5"),
+  type = c("paired-end","paired-end","paired-end",
+           "paired-end","paired-end","paired-end"))
+```
+
+## Generate dds objects
+```{r}
+# Prepare a dds for each 'counts' subset and associated metadatatable
+
+# T1T3
+dds_T1T3 <- DESeqDataSetFromMatrix(countData = DC10_T1T3,
+                              colData = coldat_T1T3,
+                              design = ~ condition)
+
+# T3T5
+dds_T3T5 <- DESeqDataSetFromMatrix(countData = DC10_T3T5,
+                              colData = coldat_T3T5,
+                              design = ~ condition)
+```
+
+## Prefiltering
+```{r}
+# Keep only dds rows with counts greater than 10
+
+# T1T3
+## keep = rowSums(counts(dds_T1T3)) >=10
+## dds_T1T3 = dds_T1T3[keep,]
+
+# T3T5
+## keep = rowSums(counts(dds_T3T5)) >=10
+## dds_T3T5 = dds_T3T5[keep,]
+
+```
+
+## DESeq analysis & pairwise comparison
+```{r}
+# T1T3
+dds_T1T3 = DESeq(dds_T1T3)
+res_T1T3 = results(dds_T1T3, contrast=c("condition","T3","T1")) # Note: contrast uses args (condition, numerator, denominator)
+res_T1T3= res_T1T3[order(res_T1T3$pvalue),]
+
+# T3T5
+dds_T3T5 = DESeq(dds_T3T5)
+res_T3T5 = results(dds_T3T5, contrast=c("condition","T5","T3")) # To set p value cutoff, set alpha = 0.05
+res_T3T5= res_T3T5[order(res_T3T5$pvalue),]
+
+# Show summary data
+summary(res_T1T3)
+summary(res_T3T5)
+```
+
+## plotMA()
+Visualize LFC over mean of normalized counts - red = p<0.05
+```{r}
+plotMA(res_T1T3)
+plotMA(res_T3T5)
+```
+
+## lfcShrink()
+Shrinks effect size by removing noise associated with LFC from low count genes using apeglm (Zhu, A., Ibrahim, J.G., Love, M.I. (2018)
+
+```{r}
+# Check coefficient names for each dds, Pass coefficients from the above call into lfcShrink(), and plot. Output .csvs of results
+
+# T1T3
+resultsNames(dds_T1T3)
+res_T1T3_LFC = lfcShrink(dds_T1T3, coef = "condition_T3_vs_T1", type = "apeglm")
+
+# T3T5
+resultsNames(dds_T3T5)
+res_T3T5_LFC = lfcShrink(dds_T3T5, coef = "condition_T5_vs_T3", type = "apeglm")
+
+# Plots
+plotMA(res_T1T3_LFC, ylim=c(-10,10))
+plotMA(res_T3T5_LFC, ylim=c(-10,10))
+```
+
+## .csvs and subsets
+```{r}
+# .csvs
+write.csv(as.data.frame(res_T1T3), 
+          file="./exploring_data/DC10_res_T1T3_results.csv")
+write.csv(as.data.frame(res_T3T5), 
+          file="./exploring_data/DC10_res_T3T5_results.csv")
+
+# To subset, subset_eg = subset(res_eg, padj < 0.05)
+```
+
+## Rorshach plots
+```{r}
+
+sigP_T1T3_LFC = data.frame(subset(res_T1T3_LFC, padj < 0.05))
+sigP_T3T5_LFC = data.frame(subset(res_T3T5_LFC, padj < 0.05))
+
+commonSigPs = merge(sigP_T1T3_LFC$log2FoldChange, sigP_T3T5_LFC$log2FoldChange, by = "row.names")
+
+plot(commonSigPs$x, commonSigPs$y, col = rgb(0,0,1,0.15), pch = 20)
+lines(commonSigPs$x, commonSigPs$y, col = rgb(1,0,0,0.05), type = 'p')
+lines(commonSigPs$x, commonSigPs$y, col = rgb(0,0,0,0.03), type = 'p')
+```
+I'm not sure this is better - it only shows genes differentially expressed in BOTH pairs of timepoints, which ignores a fair bit. 
+
+Also, I've determined a significant issue here: DESeq2 doesn't play well with Kallisto data directly - I can't simply read in est. counts and expect things to work properly. I have 2 options:
+
+1. Use tximport to work the kallisto data into an acceptable format
+2. Use Pachter lab's 'sleuth' instead. That will likely be my MO. See https://www.biostars.org/p/143458/#157303

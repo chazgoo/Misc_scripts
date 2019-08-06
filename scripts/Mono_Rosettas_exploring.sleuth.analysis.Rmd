@@ -1,0 +1,215 @@
+---
+title: "Mono_Rosettas_exploring.sleuth.analysis"
+output: html_notebook 
+author: C. Goodman
+---
+
+Since formatting the original Rosetta tables, I ran a differential expression analysis on the monocultures using sleuth - providing measures of signigicance for differential expression across all available timepoints. 
+
+From here, I'd like to do accomplish the following steps:
+
+**1. Merge sleuth-derived significance data to the original Rosetta tables**
+  - R project loc. on Benthos 
+    - Rosettas: /home/cagood/Dimensions/R_analyses/New_Rosettas 
+    - sleuth: /home/cagood/Dimensions/R_analyses/sleuth
+  - Assoc. GitHub pages
+    - [Rosettas](https://github.com/chazgoo/DIMENSIONS/tree/master/Rosettas)
+    - [DE analysis](https://github.com/chazgoo/DIMENSIONS/tree/master/Differential_Expression)
+  
+**2. Pare down the Rosettas into tables showing only common OGs**
+  - R project loc. on Benthos
+    - OrthoFinder: /home/cagood/Dimensions/OrthoFinder/analysis
+  - Assoc. GitHub page:
+    - [OrthoFinder](https://github.com/chazgoo/DIMENSIONS/tree/master/Identification/OrthoFinder)
+    
+**2b. Use TPM to determine mean, variance, and LFC of common OGs**
+  - The final tables will have raw kallisto data removed in leu of these values; it'll still be accessible in the original Rosettas and in the sleuth pipeline!! 
+  - MAJOR NOTE: The p-values reported by the sleuth timecourse run DO NOT reflect the pairwise values derived from TPMs. This is important - volcano plots from the data here won't make sense. If I want pvals from pairwise experiments, I'll need to run things differently. 
+  - UPDATE: I reran sleuth on pairwise timepoints, and things look a lot more sensible. 
+  
+**3. Obtain GO terms for all common OGs**
+
+**4. More abstractly, figure out how to present trends meaningfully**
+  - Which OGs are *all* differentially expressed? Which aren't?
+  - Which OGs with significant DE show the same pattern? 
+  - How do the associated GO terms describe the biology behind the observed trends?
+  
+***
+Working w/ DC10
+***
+
+Steps 1 & 2: Merging data and subsetting only common OGs
+> NOTE: CHANGE FILENAMES TO REFLECT EACH MONOCULTURE!
+> NOTE: sleuth tables need not be re-ran such that all results are shown - some values will remain blank
+
+```{r make Ros_cmnOGs}
+library(dplyr)
+library(gtools)
+
+# Set local vars for filenames:
+ros_file = "/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC10_Rosetta.csv"
+slu_file = "/home/cagood/Dimensions/R_analyses/sleuth/mono_sleuth_tables/DC10_sleuth-tab"
+OGr_list = "/home/cagood/Dimensions/OrthoFinder/analysis/commonOGs.txt"
+
+timepair1 = "/home/cagood/Dimensions/R_analyses/sleuth/mono_sleuth_pairwise/DC10_T0T3_sleuth-tab"
+timepair2 = "/home/cagood/Dimensions/R_analyses/sleuth/mono_sleuth_pairwise/DC10_T3T5_sleuth-tab"
+
+# Read in files:
+Rosetta = read.csv(ros_file, header = T)
+sleuth = read.csv(slu_file, header = T)
+commonOGs = read.table(OGr_list, header=T)
+tp1 = read.csv(timepair1, header=T)
+tp2 = read.csv(timepair2, header=T)
+
+# Formatting Rosetta: remove unwanted columns 
+Rosetta$X = NULL
+Rosetta$NODE = NULL
+
+# Formatting sleuth 
+# subset timecourse LRT-derived p and q values - rename 
+sleuth = select(sleuth, target_id, pval, qval)
+colnames(sleuth)[colnames(sleuth)=="pval"] = "sleuth.LRT_pval"
+colnames(sleuth)[colnames(sleuth)=="qval"] = "sleuth.LRT_qval"
+
+# subset pairwise timepoint p and q vals from pairwise experiments
+tp1 = select(tp1, target_id, pval, qval)
+colnames(tp1)[colnames(tp1)=="pval"] = "sleuth.tp1_pval"
+colnames(tp1)[colnames(tp1)=="qval"] = "sleuth.tp1_qval"
+
+tp2 = select(tp2, target_id, pval, qval)
+colnames(tp2)[colnames(tp2)=="pval"] = "sleuth.tp2_pval"
+colnames(tp2)[colnames(tp2)=="qval"] = "sleuth.tp2_qval"
+
+# Remove ".ec" columns
+tmp = Rosetta[, -grep(".ec", colnames(Rosetta))]
+
+# Get mean, variance of .tpm columns, by timepoint
+tmp$meanTPM_t0 = rowMeans(tmp[, grep("t0.", colnames(tmp))])
+tmp$meanTPM_t3 = rowMeans(tmp[, grep("t3.", colnames(tmp))])
+tmp$meanTPM_t5 = rowMeans(tmp[, grep("t5.", colnames(tmp))])
+
+tmp$varTPM_t0 = apply(tmp[, grep("t0.", colnames(tmp))], MARGIN = 1, FUN = var)
+tmp$varTPM_t3 = apply(tmp[, grep("t3.", colnames(tmp))], MARGIN = 1, FUN = var)
+tmp$varTPM_t5 = apply(tmp[, grep("t5.", colnames(tmp))], MARGIN = 1, FUN = var)
+
+# Get FC and LR based on tpm values
+tmp$t0t3_FC = foldchange(tmp$meanTPM_t3, tmp$meanTPM_t0)
+tmp$t3t5_FC = foldchange(tmp$meanTPM_t5, tmp$meanTPM_t3)
+
+tmp$t0t3_LR = foldchange2logratio(tmp$t0t3_FC, base=2)
+tmp$t3t5_LR = foldchange2logratio(tmp$t3t5_FC, base=2)
+
+# Remove ".tpm" columns
+tmp = tmp[, -grep(".tpm", colnames(tmp))]
+
+# Merges:
+tmp = merge(x = tmp, y = sleuth, by.x = "ID", by.y = "target_id", all.x = T)
+tmp = merge(x = tmp, y = tp1, by.x = "ID", by.y = "target_id", all.x = T)
+tmp = merge(x = tmp, y = tp2, by.x = "ID", by.y = "target_id", all.x = T)
+tmp = merge(x = tmp, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+
+# Write:
+## write.csv(Rosetta, file = "/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_cmnOG/DC10_Ros-cmnOGs")
+
+# cleanup
+## commonOGs = NULL
+## Rosetta = NULL
+## sleuth = NULL
+## tmp = NULL
+```
+
+*Exploratory analysis with DC10*
+```{r Read in tables}
+# Read in modified Rosettas
+DC10 = read.csv("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_cmnOG/DC10_Ros-cmnOGs")
+DC20 = read.csv("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_cmnOG/DC20_Ros-cmnOGs")
+DC30 = read.csv("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_cmnOG/DC30_Ros-cmnOGs")
+DC40 = read.csv("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_cmnOG/DC40_Ros-cmnOGs")
+DC50 = read.csv("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_cmnOG/DC50_Ros-cmnOGs")
+DC60 = read.csv("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_cmnOG/DC60_Ros-cmnOGs")
+DC70 = read.csv("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_cmnOG/DC70_Ros-cmnOGs")
+DC80 = read.csv("/home/cagood/Dimensions/R_analyses/New_Rosettas/Outputs_cmnOG/DC80_Ros-cmnOGs")
+```
+
+Rorshach plot
+```{r}
+plot(tmp$t0t3_LR, tmp$t3t5_LR, col = rgb(0,0,1,0.1))#, xlim = c(-5,5), ylim = c(-5,5))
+lines(tmp$t0t3_LR, tmp$t3t5_LR, col = rgb(1,0,0,0.05), type = 'p')
+lines(tmp$t0t3_LR, tmp$t3t5_LR, col = rgb(0,0,0,0.02), type = 'p')
+
+plot(tmp$t0t3_LR, tmp$t3t5_LR, col = rgb(0,0,1,0.1), xlim = c(-5,5), ylim = c(-5,5))
+lines(tmp$t0t3_LR, tmp$t3t5_LR, col = rgb(1,0,0,0.05), type = 'p')
+lines(tmp$t0t3_LR, tmp$t3t5_LR, col = rgb(0,0,0,0.02), type = 'p')
+```
+
+
+
+
+Another version of Rorshach - using timecourse pvalues
+```{r}
+# Make a plot
+with(tmp, plot(t0t3_LR, t3t5_LR, pch=20, col = rgb(0,0,1,0.05), xlim = c(-5,5), ylim = c(-5,5)))
+
+# various subsets colored differently based on pvalue and magnitude change. Cool!
+with(subset(tmp, sleuth.LRT_qval<.1), points(t0t3_LR, t3t5_LR, pch=20, col="red"))
+with(subset(tmp, sleuth.LRT_qval<.1 & abs(t0t3_LR)>1), points(t0t3_LR, t3t5_LR, pch=20, col="green"))
+with(subset(tmp, sleuth.LRT_qval<.1 & abs(t3t5_LR)>1), points(t0t3_LR, t3t5_LR, pch=20, col="orange"))
+with(subset(tmp, sleuth.LRT_qval<.1 & abs(t0t3_LR)>1 & abs(t3t5_LR)>1), points(t0t3_LR, t3t5_LR, pch=20, col="purple"))
+
+abline(h = 0)
+abline(v = 0)
+```
+
+Okay - I think I really need p-vals for pairwise timepoints, but this is still pretty cool. 
+
+Also, noticing that the bottom right and top left quandrants 'look' insignificant, I'm inclined to say that some bias in the sleuth process is skewed away from calling these as true DE, despite the fact that it's entirely likely that some of them are biologically true... It could also be from how the overall timecourse p-vals might differ from pairwise ones. 
+
+More work is needed, however I can feel good about what was accomplished here. 
+
+*Maybe* I can use DEseq to do pairwise experiments, and use the LFC & assoc. p-vals from those, and join them to these tables, sorting similarly by common orthogroup? 
+
+First I tried running sleuth on consecutive pairs of timepoints - how does this affect pvalues? 
+
+```{r}
+with(tmp, plot(t0t3_LR, t3t5_LR, pch=20, col = rgb(0,0,1,0.05), xlim = c(-5,5), ylim = c(-5,5)))
+
+# Add colored points: red if sleuth.tp1 & tp2_qval<0.1
+with(subset(tmp, sleuth.tp1_qval<.1 & sleuth.tp2_qval<.1), points(t0t3_LR, t3t5_LR, pch=20, col="red"))
+
+# And one or the other?
+with(subset(tmp, sleuth.tp2_qval<.05), points(t0t3_LR, t3t5_LR, pch=20, col="green"))
+with(subset(tmp, sleuth.tp1_qval<.05), points(t0t3_LR, t3t5_LR, pch=20, col="orange"))
+
+abline(h = 0)
+abline(v = 0)
+```
+Clearly, p-vals are MASSIVELY affected by running the experiment on each pair of timepoints. I don't think I agree with the 'significance' results of the total timecourse analysis: it only seems to hold if change happens in the same direction, which is not really telling the whole story.  
+
+What's more, I bet you damn well I can color points based on OrthoGroup. Fucking COOL. 
+
+```{r}
+with(tmp, plot(t0t3_LR, t3t5_LR, pch=20, col = rgb(0,0,1,0.05), xlim = c(-5,5), ylim = c(-5,5)))
+
+# Add colored points: red if sleuth.tp1 & tp2_qval<0.1
+with(subset(tmp, OG == "OG0000004"), points(t0t3_LR, t3t5_LR, pch=20, col="red"))
+```
+
+
+What about a normal volcano plot? 
+
+```{r}
+# Make a basic volcano plot
+with(tmp, plot(t0t3_LR, -log10(sleuth.tp1_qval), pch=20, main="Volcano plot", xlim=c(-5,5)))
+
+with(tmp, plot(t3t5_LR, -log10(sleuth.tp2_qval), pch=20, main="Volcano plot", xlim=c(-5,5)))
+```
+Waaaaay better.
+
+3D Scatterplot
+```{r}
+library(scatterplot3d)
+scatterplot3d(tmp$t0t3_LR, tmp$t3t5_LR, -log10(tmp$sleuth.LRT_qval), xlim = c(-5,5), ylim = c(-5,5), zlim = c(0,1), color = rgb(0,0,1,0.1), highlight.3d=TRUE,
+  type="p")
+```
+
+Okay - next steps are to clean up this code with better varnames/comments, and clean up the sleuth pairwise .rmd, get GitHub updated, etc... Then I can go about making such tables for all the monos, pulling GO terms, and so on. I'll probably do this in a new project that combines pairwise sleuth analysis and Rosetta-massaging. 

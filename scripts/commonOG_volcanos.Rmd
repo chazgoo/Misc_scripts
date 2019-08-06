@@ -1,0 +1,94 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r Libraries}
+library(tidyverse)
+library(RColorBrewer)
+```
+
+```{r}
+# Substitute species variable for each DC
+# DC20 & DC80 have 0 significant q-values, so I used p-values instead
+# Any sample lacking p<=0.05 will be all red, so need to adjust color for those. 
+# yahoo. 
+
+species = c("DC40")
+
+file = paste0("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/",species[1],"_DE_Codex")
+ttl1 = paste0("Log Change in Expression - ",species[1],": Time Pair 1")
+ttl2 = paste0("Log Change in Expression - ",species[1],": Time Pair 2")
+ttl3 = paste0("Log Change in Expression - ",species[1],": Time Pair 3")
+out1 = paste0("/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/volcanos/",species[1],"_t1t2_vol.png")
+out2 = paste0("/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/volcanos/",species[1],"_t2t3_vol.png")
+out3 = paste0("/home/cagood/Dimensions/R_analyses/Monoculture_plotting_DE/plots/volcanos/",species[1],"_t3t4_vol.png")
+
+codex = read.csv(file)
+
+codex$qthresh <- cut(codex$sleuth.tp1_qval,
+                breaks = c(-Inf, 0.05, Inf),
+                labels = c("<=0.05", ">0.05"))
+
+ggplot(subset(codex, !is.na(qthresh)), aes(x=tp1_LR, y=-log(sleuth.tp1_qval), color=qthresh)) +
+  geom_point(size = 0.1) +
+  scale_color_manual(breaks = c("<=0.05", ">0.05"), values=c("red", "black")) +
+  xlim(-7,7) + 
+  ylim(-1,10) +
+  geom_hline(yintercept=0, color = "blue", size = 0.1) +
+  geom_vline(xintercept=1, color = "chartreuse", size = 0.1) +
+  geom_vline(xintercept=-1, color = "chartreuse", size = 0.1) +
+  geom_vline(xintercept=0, color = "blue", size = 0.1) +
+  theme_dark() +
+  theme(aspect.ratio=1) +
+  labs(x = "Log Ratio: T1/T2", 
+       y = "-log(adj. p value)", 
+       title = ttl1,
+       color = "q-value")
+
+ggsave(out1)
+
+codex$qthresh <- cut(codex$sleuth.tp2_qval,
+                breaks = c(-Inf, 0.05, Inf),
+                labels = c("<=0.05", ">0.05"))
+
+ggplot(subset(codex, !is.na(qthresh)), aes(x=tp2_LR, y=-log(sleuth.tp2_qval), color=qthresh)) + 
+  geom_point(size = 0.1) +
+  scale_color_manual(breaks = c("<=0.05", ">0.05"), values=c("red", "black")) +
+  xlim(-7,7) + 
+  ylim(-1,10) +
+  geom_hline(yintercept=0, color = "blue", size = 0.1) +
+  geom_vline(xintercept=1, color = "chartreuse", size = 0.1) +
+  geom_vline(xintercept=-1, color = "chartreuse", size = 0.1) +
+  geom_vline(xintercept=0, color = "blue", size = 0.1) +
+  theme_dark() +
+  theme(aspect.ratio=1) +
+  labs(x = "Log Ratio: T2/T3", 
+       y = "-log(adj. p value)", 
+       title = ttl2,
+       color = "q-value")
+
+ggsave(out2)
+
+codex$qthresh <- cut(codex$sleuth.tp3_qval,
+                breaks = c(-Inf, 0.05, Inf),
+                labels = c("<=0.05", ">0.05"))
+
+ggplot(subset(codex, !is.na(qthresh)), aes(x=tp3_LR, y=-log(sleuth.tp3_qval), color=qthresh)) + 
+  geom_point(size = 0.1) +
+  scale_color_manual(breaks = c("<=0.05", ">0.05"), values=c("red", "black")) +
+  xlim(-7,7) + 
+  ylim(-1,10) +
+  geom_hline(yintercept=0, color = "blue", size = 0.1) +
+  geom_vline(xintercept=1, color = "chartreuse", size = 0.1) +
+  geom_vline(xintercept=-1, color = "chartreuse", size = 0.1) +
+  geom_vline(xintercept=0, color = "blue", size = 0.1) +
+  theme_dark() +
+  theme(aspect.ratio=1) +
+  labs(x = "Log Ratio: T3/T4", 
+       y = "-log(adj. p value)", 
+       title = ttl3,
+       color = "q-value")
+
+ggsave(out3)
+```

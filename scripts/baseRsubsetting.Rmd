@@ -1,0 +1,31 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r Data}
+# Read in DE_Codex tables
+DC10 = read.csv("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/DC10_DE_Codex")
+
+# Make a plot
+with(DC10, plot(tp1_LR, tp2_LR, pch=20, col = rgb(0,0,1,0.05), xlim = c(-5,5), ylim = c(-5,5)))
+
+# various subsets colored differently based on pvalue and magnitude change. Cool!
+## with(subset(DC10, sleuth.timecourse_qval<.05), points(tp1_LR, tp2_LR, pch=20, col="red"))
+## with(subset(DC10, sleuth.timecourse_qval<.1 & abs(tp1_LR)>1), points(tp1_LR, tp2_LR, pch=20, col="green"))
+## with(subset(DC10, sleuth.timecourse_qval<.1 & abs(tp2_LR)>1), points(tp1_LR, tp2_LR, pch=20, col="orange"))
+## with(subset(DC10, sleuth.timecourse_qval<.1 & abs(tp1_LR)>1 & abs(tp2_LR)>1), points(tp1_LR, tp2_LR, pch=20, col="purple"))
+with(subset(DC10, sleuth.tp1_qval<.05), points(tp1_LR, tp2_LR, pch=20, col="green"))
+with(subset(DC10, sleuth.tp2_qval<.05), points(tp1_LR, tp2_LR, pch=20, col="orange"))
+
+abline(h = 0)
+abline(v = 0)
+```
+
+```{r}
+#Subset OG.04 and OG.05, then merge with PANTH to see what happens
+
+subs = subset(DC10, DC10$OG == "OG0000004")
+panmerg = merge(subs, DC10_panth, by.x="ID", by.y="V1")
+```
+

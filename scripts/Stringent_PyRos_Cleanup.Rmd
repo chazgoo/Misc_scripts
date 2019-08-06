@@ -1,0 +1,40 @@
+---
+title: "Stringent PyRos Cleanup"
+output: html_notebook
+---
+
+```{r}
+library(readr)
+DC10_PyRos <- read_csv("DC10_PyRos.csv")
+DC20_PyRos <- read_csv("DC20_PyRos.csv")
+DC30_PyRos <- read_csv("DC30_PyRos.csv")
+DC40_PyRos <- read_csv("DC40_PyRos.csv")
+DC50_PyRos <- read_csv("DC50_PyRos.csv")
+DC60_PyRos <- read_csv("DC60_PyRos.csv")
+DC70_PyRos <- read_csv("DC70_PyRos.csv")
+DC80_PyRos <- read_csv("DC80_PyRos.csv")
+```
+
+```{r}
+library(tidyr)
+DC10_Stringent_PyRos = DC10_PyRos %>% drop_na(R1T0.tpm)
+DC20_Stringent_PyRos = DC20_PyRos %>% drop_na(R1T1.tpm)
+DC30_Stringent_PyRos = DC30_PyRos %>% drop_na(R1T1.tpm)
+DC40_Stringent_PyRos = DC40_PyRos %>% drop_na(R1T2.tpm)
+DC50_Stringent_PyRos = DC50_PyRos %>% drop_na(R1T3.tpm)
+DC60_Stringent_PyRos = DC60_PyRos %>% drop_na(R1T2.tpm)
+DC70_Stringent_PyRos = DC70_PyRos %>% drop_na(R1T1.tpm)
+DC80_Stringent_PyRos = DC80_PyRos %>% drop_na(R1T1.tpm)
+```
+
+```{r}
+write.csv(DC10_Stringent_PyRos, "DC10_Stringent_PyRos.csv", row.names = F)
+write.csv(DC20_Stringent_PyRos, "DC20_Stringent_PyRos.csv", row.names = F)
+write.csv(DC30_Stringent_PyRos, "DC30_Stringent_PyRos.csv", row.names = F)
+write.csv(DC40_Stringent_PyRos, "DC40_Stringent_PyRos.csv", row.names = F)
+write.csv(DC50_Stringent_PyRos, "DC50_Stringent_PyRos.csv", row.names = F)
+write.csv(DC60_Stringent_PyRos, "DC60_Stringent_PyRos.csv", row.names = F)
+write.csv(DC70_Stringent_PyRos, "DC70_Stringent_PyRos.csv", row.names = F)
+write.csv(DC80_Stringent_PyRos, "DC80_Stringent_PyRos.csv", row.names = F)
+```
+

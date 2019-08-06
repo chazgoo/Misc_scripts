@@ -1,0 +1,203 @@
+---
+title: "LDEs.Rmd"
+author: cagood
+date: 5.16.2018
+output: html_notebook
+---
+
+Beginning with the JSON file output by Tim's script!
+
+Found it easiest to parse and format everything outside of R so that all I needed to read in was a single CSV file. Following are the steps I took to do that:
+
+JSON to TXT parser in Python
+```
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 16 10:50:43 2018
+@author: Charles
+"""
+
+# Parse a simple nested JSON file to a txt file
+# Takes two arguments, [1] = file in (existing JSON), [2] = file out (new txt)
+# Written for Python 3.6
+
+import json
+import sys
+
+file_in = sys.argv[1]
+file_out = sys.argv[2]
+
+outfile = open(file_out,'w')
+
+with open(file_in) as infile:
+    array = json.load(infile)
+
+for key in array:
+    
+    linetowrite = str(key)+','+str(array[key])+'\n'
+    outfile.write(linetowrite)
+
+outfile.close()
+```
+SED lines to format the txt output
+```
+# Swap _ for ,
+sed 's/\_/\,/g' ConcatDiffs.txt > CD_format.txt
+
+# Remove [,], and spaces (overkill w/ new file names each time, just want to make sure it's working!
+sed 's/\[//g' CD_format.txt > CD2_format.txt; 
+sed 's/\]//g' CD2_format.txt > CD3_format.txt; 
+sed 's/\ //g' CD3_format.txt > CD4_format.txt;
+sed 's/NODE//g' CD4_format.txt > CD5_format.txt;
+sed 's/\,length//g' CD5_format.txt > CD6_format.txt;
+sed 's/\,cov//g' CD6_format.txt > CDs_format.txt;
+```
+NOTE: This can be rewritten so that tmp files aren't necessary by using -i for inplace formatting (because sed is awesome). 
+
+Easy as that!
+
+Now, read in the data:
+```{r Read in data}
+LDEs = read.table("CDs_format.txt",
+                              sep=",",
+                              col.names=c("Biculture","Node","Length","Coverage","g","i","T1","T2"),
+                              row.names=NULL)
+
+# Change 'Biculture' column from numeric
+LDEs$Biculture = as.character(LDEs$Biculture)
+```
+
+Next subset by unique 'Biculture' values
+```{r Subsetting}
+# What Bicultures do I actually have?
+subsets = sort(unique(LDEs$Biculture))
+
+# This works, but leaving DF names as numbers makes things difficult!
+# list2env(split(LDEs, LDEs$Biculture), envir = .GlobalEnv)
+
+# This works beautifully!
+LDEs_split <- split(LDEs, LDEs$Biculture)
+new_names <- c("DC12", "DC13", "DC14", "DC15", "DC16", "DC17", "DC18", "DC23", "DC24", "DC25", "DC27", "DC34", "DC35", "DC36", "DC37", "DC38", "DC45", "DC46", "DC47", "DC48", "DC56", "DC58", "DC67", "DC68", "DC78")
+for (i in 1:length(LDEs_split)) {
+  assign(new_names[i], LDEs_split[[i]])
+}
+```
+
+There are some missing bicultures - talk to Tim about this.
+
+In the meantime, I can start playing with plots.
+```{r}
+plot(DC12$T1, DC12$T2, col = rgb(0,0,0,0.1))
+plot(DC13$T1, DC13$T2, col = rgb(0,0,0,0.1))
+plot(DC14$T1, DC14$T2, col = rgb(0,0,0,0.1))
+plot(DC15$T1, DC15$T2, col = rgb(0,0,0,0.1))
+plot(DC16$T1, DC16$T2, col = rgb(0,0,0,0.1))
+plot(DC17$T1, DC17$T2, col = rgb(0,0,0,0.1))
+plot(DC18$T1, DC18$T2, col = rgb(0,0,0,0.1))
+plot(DC23$T1, DC23$T2, col = rgb(0,0,0,0.1))
+plot(DC24$T1, DC24$T2, col = rgb(0,0,0,0.1))
+plot(DC25$T1, DC25$T2, col = rgb(0,0,0,0.1))
+plot(DC27$T1, DC27$T2, col = rgb(0,0,0,0.1))
+plot(DC34$T1, DC34$T2, col = rgb(0,0,0,0.1))
+plot(DC35$T1, DC35$T2, col = rgb(0,0,0,0.1))
+plot(DC36$T1, DC36$T2, col = rgb(0,0,0,0.1))
+plot(DC37$T1, DC37$T2, col = rgb(0,0,0,0.1))
+plot(DC38$T1, DC38$T2, col = rgb(0,0,0,0.1))
+plot(DC45$T1, DC45$T2, col = rgb(0,0,0,0.1))
+plot(DC46$T1, DC46$T2, col = rgb(0,0,0,0.1))
+plot(DC47$T1, DC47$T2, col = rgb(0,0,0,0.1))
+plot(DC48$T1, DC48$T2, col = rgb(0,0,0,0.1))
+plot(DC56$T1, DC56$T2, col = rgb(0,0,0,0.1))
+plot(DC58$T1, DC58$T2, col = rgb(0,0,0,0.1))
+plot(DC67$T1, DC67$T2, col = rgb(0,0,0,0.1))
+plot(DC68$T1, DC68$T2, col = rgb(0,0,0,0.1))
+plot(DC78$T1, DC78$T2, col = rgb(0,0,0,0.1))
+```
+
+Hell yes. Now that I have this working, I'd rather go back to the Kallisto couts and make sure that I'm happy with what we're doing before pressing on to plot all of these. Also, need monocultures!
+
+It will be useful to separate genes by plot position - I don't even think I'll need k-means clustering: just do these:
+
+(+,+): Increases twice
+(+,0): Increases, then maintains
+(+,-): Increases, then decreases
+(0,+): Constant, then increases
+(0,0): Constituently active
+(0,-): Constant, then decreases
+(-,+): Decreases, then increases
+(-,0): Decreases, then constant
+(-,-): Decreases twice
+
+I can subset using logical conditions, pull Node number, and filter fasta (or BLAST) output for gene IDs in any given grouping! This would probably be way faster in Python. Or even straight up bash. That might be easiest. I would need to go back and sort the original dataframe by biculture outside of R. 
+
+```{r Density Plots}
+plot(DC78$T1, DC78$T2, col = rgb(0,0,1,0.1))
+lines(DC78$T1, DC78$T2, col = rgb(1,0,0,0.05), type = 'p')
+lines(DC78$T1, DC78$T2, col = rgb(0,0,0,0.01), type = 'p')
+```
+
+```{r Output Plots as Images}
+# Open device (as PDF, JPEG, etc.)
+pdf('filename.pdf')
+
+# Plot Commands
+plot( yourdata )
+points (some_more_data)
+
+# Close device
+dev.off()
+```
+
+```{r DC12_LDEs}
+png(file = 'DC12_LDEs.png')
+
+plot(DC12$T1, DC12$T2, 
+     col = rgb(0,0,1,0.1),
+     main = 'DC12 LDEs',
+     xlab = 'T1/T2',
+     ylab = 'T2/T3',
+     cex.main = 1.4
+     )
+
+lines(DC12$T1, DC12$T2, 
+      col = rgb(1,0,0,0.05), 
+      type = 'p')
+
+lines(DC12$T1, DC12$T2, 
+      col = rgb(0,0,0,0.01), 
+      type = 'p')
+
+legend("topright", 
+       legend = c('0.1%','0.05%','0.01%'), 
+       col = c(rgb(0,0,1,1), rgb(1,0,0,1), rgb(0,0,0,1)), 
+       pch = 15)
+
+dev.off()
+```
+
+```{r DC34_LDEss}
+png(file = 'DC34_LDEs.png')
+
+plot(DC34$T1, DC34$T2, 
+     col = rgb(0,0,1,0.1),
+     main = 'DC34 LDEs',
+     xlab = 'T1/T2',
+     ylab = 'T2/T3',
+     cex.main = 1.4
+)
+
+lines(DC34$T1, DC34$T2, 
+      col = rgb(1,0,0,0.05), 
+      type = 'p')
+
+lines(DC34$T1, DC34$T2, 
+      col = rgb(0,0,0,0.01), 
+      type = 'p')
+
+legend("topright", 
+       legend = c('0.1%','0.05%','0.01%'), 
+       col = c(rgb(0,0,1,1), rgb(1,0,0,1), rgb(0,0,0,1)), 
+       pch = 15)
+
+dev.off()
+```

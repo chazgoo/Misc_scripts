@@ -1,0 +1,73 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+I realized that rather than looking at average aa_prop over the entire transcriptome, it might make more sense to look at average aa_prop by **transcript**. This way I can show more accurate error estimates when plotting proportions. 
+
+```{r DC10}
+# Read in and format Rosetta and amino-acid composition files
+Rosfile = read.csv("~/Dimensions/R_analyses/New_Rosettas/Outputs_mono/DC10_Rosetta.csv")
+Rosfile$X = NULL
+
+# Here, use _freq instead of _count, because I want to look at proportions by transcript instead. 
+aa_counts = read.csv("~/Dimensions/Sequence_comp/aa_comps/oneline_DC10_greenORFs.fasta_freq.tsv", sep = '\t')
+aa_counts$X.1 = gsub( ">", "", as.character(aa_counts$X.1))
+aa_counts[is.na(aa_counts)] <- 0
+
+# Subset Rosfile -> ec_table by taking means of ECs for repeats at each timepoint, NULL Rosfile to keep things fast
+ec_table = data.frame(Rosfile$ID,
+                      rowMeans(Rosfile[, grep("T0.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T3.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T5.ec", colnames(Rosfile))]),
+                      rowMeans(Rosfile[, grep("T6.ec", colnames(Rosfile))]))
+colnames(ec_table) = c("ID","mean_T1.ec","mean_T2.ec","mean_T3.ec","mean_T4.ec")
+
+Rosfile = NULL
+
+# Make a new table: merge mean_TN.ec to aa_file by ID
+aa_counts = merge(x = ec_table, y = aa_counts, by.x = "ID", by.y = "X.1")
+
+# Get average aa proportion of transcripts, plus SE
+# Do this by taking the average of each aa_counts column (which are already frequencies)
+refT = data.frame((colSums(aa_counts[,c(6:27)]))/nrow(aa_counts)) # Sum doesn't = 1 b/c my script rounded to e-3 sig figs. 
+
+# New df: aa_freqs - hold average transcript aa frequencies for all timepoints
+aa_freqs = refT
+
+# Loop through mean.ec values, multiply aa_freqs by these, and then divide by total .ecs in a given timepoint
+for (mean.ec in c(2:5)){
+TP_aa_ec = aa_counts[,mean.ec] * aa_counts[-(1:5)]
+TP_aa_prop = data.frame(colSums(TP_aa_ec[,c(1:22)])/(sum(aa_counts[,mean.ec])))
+aa_freqs[,mean.ec] = TP_aa_prop
+}
+
+# Change column names to be more descriptive
+colnames(aa_freqs) = c("refT","T1_aa_prop","T2_aa_prop","T3_aa_prop","T4_aa_prop")
+
+# Make a species-specific table
+DC10_aa_freqs = aa_freqs
+DC10_aa_freqs <- data.frame(aa = row.names(DC10_aa_freqs), DC10_aa_freqs)
+
+# Convert to longform
+
+long_DC10 = gather(DC10_aa_freqs, key = "timepoint", value = "aa_prop", 2:6)
+
+# Get error bars (SE of proportions, CIs based on SE)
+# IMPORTANT: only works if 'n' is derived from the appropriate population - run this directly after each species!!!
+p = long_DC10$aa_prop
+n = nrow(aa_counts)
+
+long_DC10$aa_SE = sqrt(p*(1-p)/n)
+long_DC10$aa_CI = qnorm(.975) * long_DC10$aa_SE
+
+# Plot and save
+
+ggplot(data=long_DC10, aes(x=aa, y=aa_prop, fill=timepoint)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin=aa_prop-aa_CI, ymax=aa_prop+aa_CI), width=.1, position=position_dodge(.9)) +
+  xlab("amino acid") + ylab("mean proportion by transcript") +
+  scale_fill_brewer() + theme_dark()
+
+ggsave("DC10_aa_prop.pdf")
+```

@@ -1,0 +1,47 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+I suspect that the assembled genome provided by Zuoxi might have contaminating sequence, based on that >half of contigs did not blast-hit a closely related species. Check and see if GC content is bi/multimodal. 
+
+```{r}
+# Read in nuc_freqs for assembled UTEX2380 contigs
+freqs = read.csv("/home/cagood/UPM_collab/UTEX2380/Seqs/UTEX2380/UTEX2380_oneline.fa_freq.tsv", sep = '\t')
+
+# Read in TopHits against PCC8801 (non-hits won't appear)
+tophits = read.csv("/home/cagood/UPM_collab/UTEX2380/blast/UTEX2380vsPCC8801.out_TopHits", header = F, sep = '\t')
+
+tophits2 = read.csv("/home/cagood/UPM_collab/UTEX2380/blast/UTEX2380vsPCC7942.out_TopHits", header = F, sep = '\t')
+
+# To freqs, add column (T or F) for whether freqID was hit
+# First some basic formatting
+freqs$X = gsub(">", "", freqs$X)
+tophits = tophits[c(2:41),]
+
+freqs$hit = freqs$X %in% tophits$V1 
+
+freqs$hit2 = freqs$X %in% tophits2$V1
+
+hits2not1 = subset(freqs, freqs$hit == FALSE && freqs$hit2 == TRUE) #Returns 0, fo ALL hits in 2 (less related) are in 1. 
+
+#Subset
+freqs$GC = freqs$C+freqs$G
+
+hits = subset(freqs, freqs$hit == TRUE)
+hits$GC = hits$C+hits$G
+
+nonhits = subset(freqs, freqs$hit == FALSE)
+nonhits$GC = nonhits$C+nonhits$G
+
+
+
+#png(filename="GCtest.png")
+
+plot(density(freqs$GC), ylim = c(0,60))
+lines(density(hits$GC), col = "blue")
+lines(density(nonhits$GC), col = "red")
+
+#dev.off()
+```
+

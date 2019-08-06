@@ -1,0 +1,24 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This was my initial attempt at looking through coverage - I decided to use an entirely different pipeline based on BUSCO. 
+
+Ignore this file, and instead go here: https://github.com/chazgoo/DIMENSIONS/tree/master/Coverage%20Analysis
+
+```{r}
+DC10_refT_heads <- read.delim("~/UMD/Delwiche Lab/Dimensions/RIPS_2018/Summary Stats/R/Monocultures/DC10/DC10_refT_headers.txt", header=F, sep="_")
+
+DC10_refTG_heads <- read.delim("~/UMD/Delwiche Lab/Dimensions/RIPS_2018/Summary Stats/R/Monocultures/DC10/DC10_green_fasta_IDs.txt", header=F, sep="_")
+```
+
+```{r}
+plot(density(log(DC10_refT_heads$V6)))
+plot(density(log(DC10_refTG_heads$V6)))
+plot(density(DC10_refTG_heads$V6), xlim = c(0, 1e+04))
+
+mean(DC10_refT_heads$V6)
+mean(DC10_refTG_heads$V6)
+```
+

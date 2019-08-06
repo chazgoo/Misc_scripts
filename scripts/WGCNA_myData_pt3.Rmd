@@ -1,0 +1,52 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+# Load the WGCNA package
+library(WGCNA)
+
+# The following setting is important, do not omit.
+options(stringsAsFactors = FALSE);
+
+# Allow multi-threading within WGCNA. This helps speed up certain calculations.
+# At present this call is necessary for the code to work.
+# Any error here may be ignored but you may want to update WGCNA if you see one.
+# Caution: skip this line if you run RStudio or other third-party R environments.
+# See note above.
+enableWGCNAThreads()
+
+# Load the data saved in the first part
+lnames = load(file = "DC10-pt1-dataInput.RData");
+lnames = load(file = "DC10_pt2-networkConstruction-auto.RData");
+
+#The variable lnames contains the names of loaded variables.
+lnames
+```
+
+```{r}
+# Calculate topological overlap anew: this could be done more efficiently by saving the TOM
+# calculated during module detection, but let us do it again here.
+load(file = "DC10TOM-block.1.RData")
+TOMm = as.matrix(TOM)
+dissTOM = 1-TOMm;
+# Transform dissTOM with a power to make moderately strong connections more visible in the heatmap
+plotTOM = dissTOM^7;
+# Set diagonal to NA for a nicer plot
+diag(plotTOM) = NA;
+# Call the plot function
+sizeGrWindow(9,9)
+TOMplot(plotTOM, geneTree, moduleColors, main = "Network heatmap plot, all genes")
+```
+
+```{r}
+table(moduleLabels)
+
+plotDendroAndColors(geneTree,
+    moduleColors[[1]],
+    main = "Single block gene dendrogram and module colors",
+    dendroLabels = FALSE, hang = 0.03,
+    addGuide = TRUE, guideHang = 0.05)
+```
+

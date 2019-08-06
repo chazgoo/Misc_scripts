@@ -1,0 +1,350 @@
+---
+title: "Monoculture_Growth_Curves"
+output: html_notebook
+---
+
+[GrowthCurver](http://rstudio-pubs-static.s3.amazonaws.com/270755_b6a3cb371b0b446891deba7aa7fa55f2.html)
+
+```{r}
+# Initialize libraries
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(ggplot2)
+library(growthcurver)
+library(purrr)
+```
+
+```{r}
+# Load in and Reshape data
+mono_data = read.csv("~/Dimensions/R_analyses/DIMs_comp_master/monoculture_densities.csv", header = T)
+
+# Remove "X" column (and later figure out how to prevent this from getting written)
+mono_data$X = NULL
+
+# Stack columns by species (there must a better way to do this...)
+growth = data.frame(
+  time = mono_data$DOE,
+  DC10 = c(mono_data$Chlorella.sorokiniana_1, 
+           mono_data$Chlorella.sorokiniana_2, 
+           mono_data$Chlorella.sorokiniana_3),
+  DC20 = c(mono_data$Closteriopsis.acicularis_1, 
+           mono_data$Closteriopsis.acicularis_2, 
+           mono_data$Closteriopsis.acicularis_3),
+  DC30 = c(mono_data$Cosmarium.turpinii_1, 
+           mono_data$Cosmarium.turpinii_2, 
+           mono_data$Cosmarium.turpinii_3),
+  DC40 = c(mono_data$Pandorina.charkowiensis_1, 
+           mono_data$Pandorina.charkowiensis_2, 
+           mono_data$Pandorina.charkowiensis_3),
+  DC50 = c(mono_data$Scenedesmus.acuminatus_1, 
+           mono_data$Scenedesmus.acuminatus_2, 
+           mono_data$Scenedesmus.acuminatus_3),
+  DC60 = c(mono_data$Selenastrum.capricornutum_1, 
+           mono_data$Selenastrum.capricornutum_2, 
+           mono_data$Selenastrum.capricornutum_3),
+  DC70 = c(mono_data$Staurastrum.punctulatum_1, 
+           mono_data$Staurastrum.punctulatum_2, 
+           mono_data$Staurastrum.punctulatum_3),
+  DC80 = c(mono_data$Tetraedron.minimum_1, 
+           mono_data$Tetraedron.minimum_2, 
+           mono_data$Tetraedron.minimum_3))
+```
+
+Test-run, from vignette
+```{r}
+DC10_dat = growth[,c(1,2)]
+DC10_dat = DC10_dat %>% drop_na()
+
+ggplot(DC10_dat, aes(x = time, y = DC10)) + geom_point(alpha=0.7)
+```
+
+```{r}
+model.DC10 = SummarizeGrowth(DC10_dat$time, DC10_dat$DC10)
+model.DC10$vals
+```
+
+```{r}
+predict(model.DC10$model)
+
+plot(model.DC10)
+```
+
+```{r}
+pDC10 = ggplot(DC10_dat, aes(x = time, y = DC10)) + geom_point(alpha=0.7)
+DC10.predicted <- data.frame(time = DC10_dat$time, pred.DC10 = predict(model.DC10$model))
+
+pDC10 + geom_line(data=DC10.predicted, aes(y=DC10.predicted$pred.DC10), color="red")
+```
+
+```{r}
+# Make other subsets
+DC10_dat = growth[,c(1,2)]
+DC10_dat = DC10_dat %>% drop_na()
+
+DC20_dat = growth[,c(1,3)]
+DC20_dat = DC20_dat %>% drop_na()
+
+DC30_dat = growth[,c(1,4)]
+DC30_dat = DC30_dat %>% drop_na()
+
+DC40_dat = growth[,c(1,5)]
+DC40_dat = DC40_dat %>% drop_na()
+
+DC50_dat = growth[,c(1,6)]
+DC50_dat = DC50_dat %>% drop_na()
+
+DC60_dat = growth[,c(1,7)]
+DC60_dat = DC60_dat %>% drop_na()
+
+DC70_dat = growth[,c(1,8)]
+DC70_dat = DC70_dat %>% drop_na()
+
+DC80_dat = growth[,c(1,9)]
+DC80_dat = DC80_dat %>% drop_na()
+
+# Models and predictions
+model.DC10 = SummarizeGrowth(DC10_dat$time, DC10_dat$DC10)
+model.DC20 = SummarizeGrowth(DC20_dat$time, DC20_dat$DC20)
+model.DC30 = SummarizeGrowth(DC30_dat$time, DC30_dat$DC30)
+model.DC40 = SummarizeGrowth(DC40_dat$time, DC40_dat$DC40)
+model.DC50 = SummarizeGrowth(DC50_dat$time, DC50_dat$DC50)
+model.DC60 = SummarizeGrowth(DC60_dat$time, DC60_dat$DC60)
+model.DC70 = SummarizeGrowth(DC70_dat$time, DC70_dat$DC70)
+model.DC80 = SummarizeGrowth(DC80_dat$time, DC80_dat$DC80)
+
+pDC10 = ggplot(DC10_dat, aes(x = time, y = DC10)) + geom_point(alpha=0.7)
+DC10.predicted <- data.frame(time = DC10_dat$time, pred.DC10 = predict(model.DC10$model))
+
+pDC20 = ggplot(DC20_dat, aes(x = time, y = DC20)) + geom_point(alpha=0.7)
+DC20.predicted <- data.frame(time = DC20_dat$time, pred.DC20 = predict(model.DC20$model))
+
+pDC30 = ggplot(DC30_dat, aes(x = time, y = DC30)) + geom_point(alpha=0.7)
+DC30.predicted <- data.frame(time = DC30_dat$time, pred.DC30 = predict(model.DC30$model))
+
+pDC40 = ggplot(DC40_dat, aes(x = time, y = DC40)) + geom_point(alpha=0.7)
+DC40.predicted <- data.frame(time = DC40_dat$time, pred.DC40 = predict(model.DC40$model))
+
+pDC50 = ggplot(DC50_dat, aes(x = time, y = DC50)) + geom_point(alpha=0.7)
+DC50.predicted <- data.frame(time = DC50_dat$time, pred.DC50 = predict(model.DC50$model))
+
+pDC60 = ggplot(DC60_dat, aes(x = time, y = DC60)) + geom_point(alpha=0.7)
+DC60.predicted <- data.frame(time = DC60_dat$time, pred.DC60 = predict(model.DC60$model))
+
+pDC70 = ggplot(DC70_dat, aes(x = time, y = DC70)) + geom_point(alpha=0.7)
+DC70.predicted <- data.frame(time = DC70_dat$time, pred.DC70 = predict(model.DC70$model))
+
+pDC80 = ggplot(DC80_dat, aes(x = time, y = DC80)) + geom_point(alpha=0.7)
+DC80.predicted <- data.frame(time = DC80_dat$time, pred.DC80 = predict(model.DC80$model))
+
+pDC10 + 
+  geom_line(data=DC10.predicted, aes(y=DC10.predicted$pred.DC10), color="red") + 
+  geom_vline(xintercept = 8, color = "blue", size=0.3) +
+  geom_vline(xintercept = 16, color = "blue", size=0.3) +
+  geom_vline(xintercept = 26, color = "blue", size=0.3) +
+  geom_vline(xintercept = 46, color = "blue", size=0.3) +
+  ggtitle("Chlorella sorokiniana") +
+  ylab("Cells/ml") + 
+  xlab("Day")
+
+ggsave("DC10gc.pdf", device = "pdf")
+
+pDC20 + geom_line(data=DC20.predicted, aes(y=DC20.predicted$pred.DC20), color="red") + 
+  geom_vline(xintercept = 10, color = "blue", size=0.3) +
+  geom_vline(xintercept = 18, color = "blue", size=0.3) +
+  geom_vline(xintercept = 26, color = "blue", size=0.3) +
+  geom_vline(xintercept = 46, color = "blue", size=0.3) +
+  ggtitle("Closteriopsis acicularis") +
+  ylab("Cells/ml") + 
+  xlab("Day")
+
+ggsave("DC20gc.pdf", device = "pdf")
+
+pDC30 + geom_line(data=DC30.predicted, aes(y=DC30.predicted$pred.DC30), color="red") + 
+  geom_vline(xintercept = 10, color = "blue", size=0.3) +
+  geom_vline(xintercept = 16, color = "blue", size=0.3) +
+  geom_vline(xintercept = 26, color = "blue", size=0.3) +
+  geom_vline(xintercept = 46, color = "blue", size=0.3) +
+  ggtitle("Cosmarium turpinii") +
+  ylab("Cells/ml") + 
+  xlab("Day")
+
+ggsave("DC30gc.pdf", device = "pdf")
+
+pDC40 + geom_line(data=DC40.predicted, aes(y=DC40.predicted$pred.DC40), color="red") + 
+  geom_vline(xintercept = 12, color = "blue", size=0.3) +
+  geom_vline(xintercept = 18, color = "blue", size=0.3) +
+  geom_vline(xintercept = 34, color = "blue", size=0.3) +
+  geom_vline(xintercept = 46, color = "blue", size=0.3) +
+  ggtitle("Pandorina charkoweinsis") +
+  ylab("Cells/ml") + 
+  xlab("Day")
+
+ggsave("DC40gc.pdf", device = "pdf")
+
+pDC50 + geom_line(data=DC50.predicted, aes(y=DC50.predicted$pred.DC50), color="red") + 
+  geom_vline(xintercept = 12, color = "blue", size=0.3) +
+  geom_vline(xintercept = 16, color = "blue", size=0.3) +
+  geom_vline(xintercept = 26, color = "blue", size=0.3) +
+  geom_vline(xintercept = 41, color = "blue", size=0.3) +
+  ggtitle("Scenedesmus acuminatus") +
+  ylab("Cells/ml") + 
+  xlab("Day")
+
+ggsave("DC50gc.pdf", device = "pdf")
+
+pDC60 + geom_line(data=DC60.predicted, aes(y=DC60.predicted$pred.DC60), color="red") + 
+  geom_vline(xintercept = 12, color = "blue", size=0.3) +
+  geom_vline(xintercept = 16, color = "blue", size=0.3) +
+  geom_vline(xintercept = 26, color = "blue", size=0.3) +
+  geom_vline(xintercept = 44, color = "blue", size=0.3) +
+  ggtitle("Raphidocelis subcapitata") +
+  ylab("Cells/ml") + 
+  xlab("Day")
+
+ggsave("DC60gc.pdf", device = "pdf")
+
+pDC70 + geom_line(data=DC70.predicted, aes(y=DC70.predicted$pred.DC70), color="red") + 
+  geom_vline(xintercept = 8, color = "blue", size=0.3) +
+  geom_vline(xintercept = 18, color = "blue", size=0.3) +
+  geom_vline(xintercept = 34, color = "blue", size=0.3) +
+  geom_vline(xintercept = 46, color = "blue", size=0.3) +
+  ggtitle("Staurastrum punctulatum") +
+  ylab("Cells/ml") + 
+  xlab("Day")
+
+ggsave("DC70gc.pdf", device = "pdf")
+
+pDC80 + geom_line(data=DC80.predicted, aes(y=DC80.predicted$pred.DC80), color="red") + 
+  geom_vline(xintercept = 10, color = "blue", size=0.3) +
+  geom_vline(xintercept = 12, color = "blue", size=0.3) +
+  geom_vline(xintercept = 18, color = "blue", size=0.3) +
+  geom_vline(xintercept = 46, color = "blue", size=0.3) +
+  ggtitle("Tetraedron minimum") +
+  ylab("Cells/ml") + 
+  xlab("Day")
+
+ggsave("DC80gc.pdf", device = "pdf")
+```
+
+```{r}
+model.DC10
+model.DC20
+model.DC30
+model.DC40
+model.DC50
+model.DC60
+model.DC70
+model.DC80
+
+plot(model.DC10)
+plot(model.DC20)
+plot(model.DC30)
+plot(model.DC40)
+plot(model.DC50)
+plot(model.DC60)
+plot(model.DC70)
+plot(model.DC80)
+
+```
+
+```{r}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+```{r}
+a = pDC10 + geom_line(data=DC10.predicted, aes(y=DC10.predicted$pred.DC10), color="red")
+b = pDC20 + geom_line(data=DC20.predicted, aes(y=DC20.predicted$pred.DC20), color="red")
+c = pDC30 + geom_line(data=DC30.predicted, aes(y=DC30.predicted$pred.DC30), color="red")
+d = pDC40 + geom_line(data=DC40.predicted, aes(y=DC40.predicted$pred.DC40), color="red")
+e = pDC50 + geom_line(data=DC50.predicted, aes(y=DC50.predicted$pred.DC50), color="red")
+f = pDC60 + geom_line(data=DC60.predicted, aes(y=DC60.predicted$pred.DC60), color="red")
+g = pDC70 + geom_line(data=DC70.predicted, aes(y=DC70.predicted$pred.DC70), color="red")
+h = pDC80 + geom_line(data=DC80.predicted, aes(y=DC80.predicted$pred.DC80), color="red")
+
+multiplot(a, b, c, d, e, f, g, h, cols = 2)
+```
+
+```{r}
+a = pDC10 + geom_line(data=DC10.predicted, aes(y=DC10.predicted$pred.DC10), color="red") +
+  ylab("Relative Density") +
+  xlab("Time (Days)") +
+  ggtitle("DC10")
+b = pDC20 + geom_line(data=DC20.predicted, aes(y=DC20.predicted$pred.DC20), color="red") +
+  ylab("Relative Density") +
+  xlab("Time (Days)") +
+  ggtitle("DC20")
+c = pDC30 + geom_line(data=DC30.predicted, aes(y=DC30.predicted$pred.DC30), color="red") +
+  ylab("Relative Density") +
+  xlab("Time (Days)") +
+  ggtitle("DC30")
+d = pDC40 + geom_line(data=DC40.predicted, aes(y=DC40.predicted$pred.DC40), color="red") +
+  ylab("Relative Density") +
+  xlab("Time (Days)") +
+  ggtitle("DC40")
+e = pDC50 + geom_line(data=DC50.predicted, aes(y=DC50.predicted$pred.DC50), color="red") +
+  ylab("Relative Density") +
+  xlab("Time (Days)") +
+  ggtitle("DC50")
+f = pDC60 + geom_line(data=DC60.predicted, aes(y=DC60.predicted$pred.DC60), color="red") +
+  ylab("Relative Density") +
+  xlab("Time (Days)") +
+  ggtitle("DC60")
+g = pDC70 + geom_line(data=DC70.predicted, aes(y=DC70.predicted$pred.DC70), color="red") +
+  ylab("Relative Density") +
+  xlab("Time (Days)") +
+  ggtitle("DC70")
+h = pDC80 + geom_line(data=DC80.predicted, aes(y=DC80.predicted$pred.DC80), color="red") +
+  ylab("Relative Density") +
+  xlab("Time (Days)") +
+  ggtitle("DC80")
+
+multiplot(a, b, c, d, e, f, g, h, cols = 2)
+
+ggsave("all.png",multiplot(a, b, c, d, e, f, g, h, cols = 2))
+```
+

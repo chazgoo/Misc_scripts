@@ -1,0 +1,148 @@
+---
+title: "WGCNA; testing my data"
+output: html_notebook
+---
+
+```{r}
+library(WGCNA)
+```
+
+**Reading, formatting, QC of data**
+
+I need a table containing counts, formatted by [samples,genes]. From what I can tell, it ought to be TMP values.
+
+```{r}
+# PyRos files hold TPM values & gene IDs, let's use that
+DC10 = read.csv("~/Dimensions/Rosettas/DC10_PyRos.csv", header = T)
+
+# Remove 'nongreen' data by pulling only rows with UniProt Green BLAST ID
+DC10 = DC10[complete.cases(DC10$BlastID),]
+
+# transpose orig. TPM columns X gene rows as new df, set names 
+DC10exp = as.data.frame(t(DC10[,c(5:16)]))
+names(DC10exp) = DC10$ID
+rownames(DC10exp) = names(DC10[,c(5:16)])
+
+# Make a log set
+##DC10expl = log(DC10exp)
+##DC10expl[is.na(DC10expl)] <- 0
+
+# Check it
+head(DC10exp)
+
+head(DC10expl)
+```
+
+```{r}
+# Check for missing sample values or zero variance
+gsg = goodSamplesGenes(DC10exp, verbose = 3);
+gsg$allOK
+```
+
+```{r}
+# For log?
+##gsg = goodSamplesGenes(DC10expl, verbose = 3);
+##gsg$allOK
+```
+
+```{r}
+# Run this if False is returned
+gsg = goodSamplesGenes(DC10exp, verbose = 3);
+gsg$allOK
+
+if (!gsg$allOK)
+{
+# Optionally, print the gene and sample names that were removed:
+if (sum(!gsg$goodGenes)>0)
+printFlush(paste("Removing genes:", paste(names(DC10exp)[!gsg$goodGenes], collapse = ", ")));
+if (sum(!gsg$goodSamples)>0)
+printFlush(paste("Removing samples:", paste(rownames(DC10exp)[!gsg$goodSamples], collapse = ", ")));
+}
+```
+
+```{r}
+# Remove the offending genes and samples from the data:
+DC10exp = DC10exp[gsg$goodSamples, gsg$goodGenes]
+
+# Check again
+gsg = goodSamplesGenes(DC10exp, verbose = 3);
+gsg$allOK
+```
+
+```{r}
+# Use distance clustering to detect outliers
+sampleTree = hclust(dist(DC10exp), method = "average");
+
+par(cex = 0.6);
+par(mar = c(0,4,2,0))
+plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="", cex.lab = 1.5,
+cex.axis = 1.5, cex.main = 2)
+```
+
+```{r}
+# Plot a line to show the cut
+par(cex = 0.6);
+par(mar = c(0,4,2,0))
+plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="", cex.lab = 1.5,
+cex.axis = 1.5, cex.main = 2)
+
+abline(h = 30000, col = "red");
+
+# Determine cluster under the line
+clust = cutreeStatic(sampleTree, cutHeight = 30000, minSize = 10)
+table(clust)
+
+# clust 1 contains the samples we want to keep.
+keepSamples = (clust==1)
+DC10exp = DC10exp[keepSamples, ]
+nGenes = ncol(DC10exp)
+nSamples = nrow(DC10exp)
+```
+
+```{r}
+# Make a 'traits' table
+# Rather than deal with this programatically right now, I'll just pull values from DIMENSIONS_CompetitonMaster.xls
+# Need [samples, traits]
+
+employee <- c('John Doe','Peter Gynn','Jolie Hope')
+salary <- c(21000, 23400, 26800)
+startdate <- as.Date(c('2010-11-1','2008-3-25','2007-3-14'))
+employ.data <- data.frame(employee, salary, startdate)
+
+samples = c('R1T0.tpm','R1T3.tpm','R1T5.tpm','R1T6.tpm','R2T0.tpm','R2T3.tpm','R2T5.tpm','R2T6.tpm','R3T0.tpm','R3T3.tpm','R3T5.tpm','R3T6.tpm')
+Density = c(255812,539024,832912,1439255,516044,1185934,1189444,1883379,309437,1291800,1779681,2039849)
+NO3 = c(14344,14393,14266,12441,13453,13622,12178,10012,13602,13591,11359,10159)
+NH3 = c(6,6,14,11,33,29,8,10,6,21,4,23)
+PO4 = c(720,683,680,409,764,682,550,349,883,760,489,354)
+
+DC10traits = data.frame(samples, Density, NO3, NH3, PO4)
+rownames(DC10traits) = DC10traits$samples
+DC10traits$samples = NULL
+
+# Remove R3T5 (row 11)
+DC10traits = DC10traits[-c(11),]
+```
+
+```{r}
+head(DC10exp)
+head(DC10traits)
+```
+
+```{r}
+# Remake tree w/ heatmap of traits
+
+# Re-cluster samples
+sampleTree2 = hclust(dist(DC10exp), method = "average")
+# Convert traits to a color representation: white means low, red means high, grey means missing entry
+traitColors = numbers2colors(DC10traits, signed = FALSE);
+# Plot the sample dendrogram and the colors underneath.
+plotDendroAndColors(sampleTree2, traitColors,
+groupLabels = names(DC10traits),
+main = "Sample dendrogram and trait heatmap")
+```
+
+```{r}
+# Save data to use in next module
+save(DC10exp, DC10traits, file = "DC10-pt1-dataInput.RData")
+```
+

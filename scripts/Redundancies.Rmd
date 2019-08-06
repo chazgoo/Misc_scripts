@@ -1,0 +1,140 @@
+---
+title: "Redundancy"
+output: html_notebook
+---
+
+This notebook makes use of the DC10green and OG_4 objects created in Digging_into_DC10.Rmd
+
+Essentially, DC10green at the outset of this flow = the following:
+
+1. The PyRos file, a little reorganized
+2. NA rows in BlastID removed; leaving only 'green' UniProt IDs
+3. merged with additional annotations (from crossRef)
+
+Herein, I filter out partial genes, and externally remove duplicate transcripts. At the end, I rerun kallisto on this culled transcriptome and show that there's a significant effect.
+
+```{r}
+head(OG_4)
+```
+
+First, sort by 'complete'
+```{r}
+OG_4_complete = OG_4[grep("complete|internal", OG_4$Type),]
+length(OG_4$NODE)
+length(OG_4_complete$NODE)
+```
+
+For OG_4, this removed ~50% of the entries... What does it do for the entire set?
+
+```{r}
+DC10green_complete = DC10green[grep("complete|internal", DC10green$Type),]
+length(DC10green$NODE)
+length(DC10green_complete$NODE)
+```
+
+Not quite as many removed, but still. This seems like a reasonable cut to make.
+
+```{r}
+head(DC10)
+```
+
+Stepping outside of R for a moment, bbmap has a function called dedupe, built for removing duplicates:
+```{r engine=bash}
+~/software/bbmap/dedupe.sh in=DC10_pep.fasta out=DC10_uniqpep.fasta outd=DC10_duppep.fasta amino=t overwrite=t
+
+grep ">" DC10_uniqpep.fasta > DC10_uniqIDs
+
+sed -i 's/>//g' DC10_uniqIDs
+```
+
+Now, let's grab those IDs and sort DC10green by that, and THEN by 'complete'
+```{r}
+uniqueIDs <- as.data.frame(scan("DC10_uniqIDs", what="", sep="\n"))
+colnames(uniqueIDs) <- "ID"
+
+DC10green_uniq = merge(DC10green, uniqueIDs, by.x = "ID", by.y = "ID", all.x = F, all.y = F)
+DC10green_compUniq = DC10green_uniq[grep("complete|internal", DC10green_uniq$Type),]
+
+```
+
+This took us from 27362 entries to 13072 - this is super helpful. VERY likely that real things are being lost, and also that artefacts still remain - but still. This feels like a safe way to narrow down the number of contigs. 
+
+Next:
+1. Make a kallisto index based only on items in DC10green_compUniq
+2. Run kallisto on that
+3. Compare results between counts on the whole set vs. counts on the reduced set. If there's a significant difference, I'll want to rerun kallisto in this manner going downstream. 
+
+In here, get a list of NODE ids:
+```{r}
+head(PyRos)
+```
+
+```{r}
+PyIDs = PyRos[,c("NODE","ID")]
+
+DC10green_compUniq = merge(DC10green_compUniq, PyIDs, by.x = "ID", by.y = "ID", all.x = T, all.y = F)
+
+cat(sapply(DC10green_compUniq$NODE.y, toString), file = "DC10gr-un-com-IDs.txt", sep="\n")
+```
+
+When separating green/nongreen before, I used this strategy:
+
+# Extract sequences from fasta file by ID
+# Input is an ID file and the reference transcriptome for each monoculture, output is green fasta data as new file.
+# General form: $ perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ids.file fasta.file
+
+The ids. file looks like this: 
+
+NODE_1_length_18697_cov_80.020532_g0_i0
+NODE_2_length_16966_cov_17.027536_g1_i0
+NODE_3_length_15933_cov_82.207552_g2_i0
+NODE_5_length_14258_cov_1089.189800_g4_i0
+
+My DC10gr-un-com-IDs file looks like:
+
+NODE_1_length_18697_cov_80.020532_g0_i0
+NODE_2_length_16966_cov_17.027536_g1_i0
+NODE_16_length_12381_cov_39.622953_g10_i0
+NODE_163_length_7852_cov_191.537713_g100_i0
+NODE_1761_length_4311_cov_257.036551_g1000_i0
+NODE_5000_length_2873_cov_145.562191_g1000_i1
+NODE_19538_length_1142_cov_132.633303_g10002_i0
+NODE_19540_length_1142_cov_119.921747_g10003_i0
+NODE_19544_length_1142_cov_53.441310_g10005_i0
+NODE_19550_length_1141_cov_305.125683_g10008_i0
+
+So I do believe it'll work...
+
+```{r engine=bash}
+perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ./DC10gr-un-com-IDs.txt /home/cagood/Dimensions/ReferenceTranscriptomes/unsorted/DC10_transcripts.fasta > ./DC10_GrnUnqComp.fa
+```
+
+It works! File is in this directory. 
+
+From here, I need to do me some kallisto. I'll keep notes in the following non-runnable code block
+```
+# Make an index
+$ ~/software/kallisto_linux-v0.44.0/kallisto index -i DC10_GrnUnqComp_indx DC10_GrnUnqComp.fa
+
+# Let's count just R1_T0
+~/software/kallisto_linux-v0.44.0/kallisto quant -i DC10_GrnUnqComp_indx -b 100 -o DC10_GrnUnqComp_R1T0_Kallisto ~/Dimensions/TrimmedReads/DC10.R1T0_1.trimmed.fq.gz ~/Dimensions/TrimmedReads/DC10.R1T0_2.trimmed.fq.gz
+```
+Okay - now read in and merge by GrnUnqComp
+```{r}
+newKal = read.csv('./grnKallisto/DC10_GrnUnqComp_R1T0_Kallisto/abundance.tsv', sep = '\t')
+head(newKal)
+
+newKal = newKal[,c('target_id','tpm')]
+head(newKal)
+
+oldKalsubs = DC10green_compUniq[,c('NODE.y','R1T0.tpm')]
+
+oldVSnew = merge(oldKalsubs, newKal, by.x = "NODE.y", by.y = "target_id", all.x = T, all.y = F)
+
+plot(log(oldVSnew$R1T0.tpm), log(oldVSnew$tpm), pch = 20, cex = 0.005)
+plot((oldVSnew$R1T0.tpm), (oldVSnew$tpm))
+```
+
+So, it's pretty clear that there was an effect. A perfect diagonal would indicate that counts were unaffected - here, that cloud to the upper left suggests that the new values increased in many cases, which is expected: removing contigs would free up reads to be mapped to remaining contigs. 
+
+Looks like I'll be re-running kallisto :-D

@@ -1,0 +1,49 @@
+---
+title: "Common orthogroups"
+author: "cagood"
+date: "6.15.18"
+output: html_notebook
+---
+
+Processing data from my 6.13.2018 OrthoFinder run (located in /home/cagood/Dimensions/OrthoFinder/pepfiles/Results_Jun13/) in order to return a list of orthogroups common to all 8 species.
+
+```{r Read in Orthogroup count data}
+genecounts = data.frame(read.table("/home/cagood/Dimensions/OrthoFinder/pepfiles/Results_Jun13/Orthogroups.GeneCount.csv", header = T))
+
+head(genecounts)
+```
+
+```{r Subset}
+# Add to subset if columns 1-8 are all greater than zero
+# MARGIN = 1 sets apply to 'rows', so that each row's values must all be greater than 0
+commonOGs = genecounts[apply(genecounts, MARGIN = 1, function(x) all(x > 0)), ]
+
+head(commonOGs)
+tail(commonOGs)
+```
+
+My commonOGs subset has 3156 observations, which matches the value in ~/Dimensions/OrthoFinder/pepfiles/Results_Jun13/Statistics_Overall.csv for 'Number of orthogroups with all species present'. Nice. 
+
+```{r List of common OGs}
+# Get rownames of commonOGs and output a list of these names
+namelist = row.names(commonOGs)
+
+write.table(namelist, 'commonOGs.txt')
+
+head(namelist)
+```
+
+```{r Read in Orthogroup ID data}
+# Read in the total list of genes assigned to Orthogroups
+geneIDs = read.csv("/home/cagood/Dimensions/OrthoFinder/pepfiles/Results_Jun13/Orthogroups.csv", header = F, sep = '\t')
+
+head(geneIDs)
+```
+
+```{r Filter geneIDs by commonOGs list}
+# Subset the list of genes by orthogroup, based on whether the orthogroup is in the namelist, and write a new csv file
+common_genes_by_OG = geneIDs[geneIDs$V1 %in% namelist,]
+
+write.table(common_genes_by_OG, 'commonOG_Nodes.tsv', quote = F, sep = '\t', col.names = NA)
+```
+

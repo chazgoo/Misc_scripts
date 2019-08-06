@@ -1,0 +1,458 @@
+---
+title: "Sleuth_monos"
+author: Charles Goodman
+output: html_notebook
+---
+
+This notebook will be used to produce locally saved sleuth_objects and summary sleuth_tables for each of the monoculture datasets; these will ultimately serve a variety of purposes in downstream analysis. 
+
+*Intros and manuals*
+```{r}
+vignette('intro', package = 'sleuth')
+help(package = 'sleuth')
+```
+
+Also see:
+
+[GitHub](https://github.com/pachterlab/sleuth)
+[Pachter Lab](https://pachterlab.github.io/sleuth/)
+
+*Kallisto output data pooling*
+```
+# 1. Copied kallisto data from ~/Dimensions/R_analyses/Monoculture_Expression_Data to ~/Dimensions/Monocultures (orig. still intact!)
+scp -r ./Data/ /home/cagood/Dimensions/Monocultures/
+
+# 2. Renamed directory to mono_expr_data
+mv Data/ mono_expr_data
+
+# 3. Changed kallisto output directories from 'kallisto_t0_r1' etc. to 'DC10_t0_r1' etc... NOTE: do this for each species!
+rename 's/kallisto/DC10/' kallisto_*/
+
+# 4. Find and delete empty directories below current dir
+find . -type d -empty -print
+find . -type d -empty -delete
+
+# Now each monoculture has specifically-named kallisto output data.
+```
+
+*Initialize packages*
+
+```{r include=FALSE}
+source("http://bioconductor.org/biocLite.R")
+# Only need to install these packages once... do this from sudo R session in terminal
+##biocLite("devtools")
+##biocLite("pachterlab/sleuth")
+##biocLite("rhdf5")
+##biocLite("shinyapp")
+
+library("dplyr")
+library("sleuth")
+library("rhdf5")
+library("devtools")
+library("shiny")
+library("splines")
+```
+
+*Analyses, by monoculture*
+Format a block for each monoculture.
+
+**Input** = kallisto data location, condition values, output var/filenames
+**Output** = A local named sleuth_object, and a csv of sleuth_results() values
+
+Notes: 
+
+'condition' values reflect days past 1st RNA extraction, from DIMENSIONS_CompetitionMaster.xls. Set count @ first extraction in sample_id = 1
+T0 = 14-Apr
+T1 = 16-Apr
+T2 = 18-Apr
+T3 = 22-Apr
+T4 = 24-Apr
+T5 = 02-May
+T6 = 22-May
+
+df = degrees of freedom; set to lowest number in s2c matrix dimensions
+
+```{r DC10, include=FALSE}
+## DC10 Inputs
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/01")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/01",sample_id)
+
+# Construct a 'sample-to-covariate' table (I was calling this 'metadata' before)
+# Set count @ first extraction in sample_id = 1
+s2c = data.frame(
+  sample = sample_id,
+  condition = c(1,1,1,
+                9,9,9,
+                19,19,19),
+  path = as.character(kal_dirs),
+  stringsAsFactors = FALSE)
+
+# Generate the model based on the s2c$condition values, w/ degrees of freedom = lowest number of matrix dimensions
+design_matrix = model.matrix(formula(~ ns(s2c$condition, df=3)))
+
+
+## Model fitting
+# Prepare the sleuth object using the splines-based model
+so <- sleuth_prep(s2c, full_model = design_matrix)
+
+# Fit the full model, based on condition (day of RNA collection); and fit the reduced model w/o
+so <- sleuth_fit(so, ~condition, 'full')
+so <- sleuth_fit(so, formula = ~ 1, fit_name = "reduced")
+
+# Perform likelihood ratio test
+so <- sleuth_lrt(so, "reduced", "full")
+
+
+## Outputs
+# Set the sleuth_object and sleuth_table to a named local var
+DC10so = so
+DC10st = sleuth_results(so, 'reduced:full', 'lrt', show_all = TRUE)
+
+# Write the sleuth_table to a .csv
+write.csv(DC10st, file = "./mono_sleuth_tables/DC10_sleuth-tab", row.names = FALSE)
+```
+
+```{r DC20, include=FALSE}
+## DC20 Inputs 
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/02")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/02",sample_id)
+
+# Construct a 'sample-to-covariate' table (I was calling this 'metadata' before)
+# Set count @ first extraction in sample_id = 1
+s2c = data.frame(
+  sample = sample_id,
+  condition = c(1,1,
+                11,11,
+                19,19,19),
+  path = as.character(kal_dirs),
+  stringsAsFactors = FALSE)
+
+# Generate the model based on the s2c$condition values, w/ degrees of freedom = lowest number of matrix dimensions
+design_matrix = model.matrix(formula(~ ns(s2c$condition, df=2)))
+
+
+## Model fitting
+# Prepare the sleuth object using the splines-based model
+so <- sleuth_prep(s2c, full_model = design_matrix)
+
+# Fit the full model, based on condition (day of RNA collection); and fit the reduced model w/o
+so <- sleuth_fit(so, ~condition, 'full')
+so <- sleuth_fit(so, formula = ~ 1, fit_name = "reduced")
+
+# Perform likelihood ratio test
+so <- sleuth_lrt(so, "reduced", "full")
+
+
+## Outputs 
+# Set the sleuth_object and sleuth_table to a named local var
+DC20so = so
+DC20st = sleuth_results(so, 'reduced:full', 'lrt', show_all = FALSE)
+
+# Write the sleuth_table to a .csv
+write.csv(DC20st, file = "./mono_sleuth_tables/DC20_sleuth-tab", row.names = FALSE)
+```
+
+```{r DC30, include=FALSE}
+## DC30 Inputs 
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/03")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/03",sample_id)
+
+# Construct a 'sample-to-covariate' table (I was calling this 'metadata' before)
+# Set count @ first extraction in sample_id = 1
+s2c = data.frame(
+  sample = sample_id,
+  condition = c(1,1,1,
+                9,9,9,
+                19,19,19),
+  path = as.character(kal_dirs),
+  stringsAsFactors = FALSE)
+
+# Generate the model based on the s2c$condition values, w/ degrees of freedom = lowest number of matrix dimensions
+design_matrix = model.matrix(formula(~ ns(s2c$condition, df=3)))
+
+
+## Model fitting
+# Prepare the sleuth object using the splines-based model
+so <- sleuth_prep(s2c, full_model = design_matrix)
+
+# Fit the full model, based on condition (day of RNA collection); and fit the reduced model w/o
+so <- sleuth_fit(so, ~condition, 'full')
+so <- sleuth_fit(so, formula = ~ 1, fit_name = "reduced")
+
+# Perform likelihood ratio test
+so <- sleuth_lrt(so, "reduced", "full")
+
+
+## Outputs 
+# Set the sleuth_object and sleuth_table to a named local var
+DC30so = so
+DC30st = sleuth_results(so, 'reduced:full', 'lrt', show_all = FALSE)
+
+# Write the sleuth_table to a .csv
+write.csv(DC30st, file = "./mono_sleuth_tables/DC30_sleuth-tab", row.names = FALSE)
+```
+
+```{r DC40, include=FALSE}
+## DC40 Inputs 
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/04")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/04",sample_id)
+
+# Construct a 'sample-to-covariate' table (I was calling this 'metadata' before)
+# Set count @ first extraction in sample_id = 1
+s2c = data.frame(
+  sample = sample_id,
+  condition = c(1,1,1,
+                7,7,7),
+  path = as.character(kal_dirs),
+  stringsAsFactors = FALSE)
+
+# Generate the model based on the s2c$condition values, w/ degrees of freedom = lowest number of matrix dimensions
+design_matrix = model.matrix(formula(~ ns(s2c$condition, df=2)))
+
+
+## Model fitting
+# Prepare the sleuth object using the splines-based model
+so <- sleuth_prep(s2c, full_model = design_matrix)
+
+# Fit the full model, based on condition (day of RNA collection); and fit the reduced model w/o
+so <- sleuth_fit(so, ~condition, 'full')
+so <- sleuth_fit(so, formula = ~ 1, fit_name = "reduced")
+
+# Perform likelihood ratio test
+so <- sleuth_lrt(so, "reduced", "full")
+
+
+## Outputs 
+# Set the sleuth_object and sleuth_table to a named local var
+DC40so = so
+DC40st = sleuth_results(so, 'reduced:full', 'lrt', show_all = FALSE)
+
+# Write the sleuth_table to a .csv
+write.csv(DC40st, file = "./mono_sleuth_tables/DC40_sleuth-tab", row.names = FALSE)
+```
+
+```{r DC50, include=FALSE}
+## DC50 Inputs 
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/05")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/05",sample_id)
+
+# Construct a 'sample-to-covariate' table (I was calling this 'metadata' before)
+# Set count @ first extraction in sample_id = 1
+s2c = data.frame(
+  sample = sample_id,
+  condition = c(1,1,
+                4,4,4,
+                16,16,16),
+  path = as.character(kal_dirs),
+  stringsAsFactors = FALSE)
+
+# Generate the model based on the s2c$condition values, w/ degrees of freedom = lowest number of matrix dimensions
+design_matrix = model.matrix(formula(~ ns(s2c$condition, df=2)))
+
+
+## Model fitting
+# Prepare the sleuth object using the splines-based model
+so <- sleuth_prep(s2c, full_model = design_matrix)
+
+# Fit the full model, based on condition (day of RNA collection); and fit the reduced model w/o
+so <- sleuth_fit(so, ~condition, 'full')
+so <- sleuth_fit(so, formula = ~ 1, fit_name = "reduced")
+
+# Perform likelihood ratio test
+so <- sleuth_lrt(so, "reduced", "full")
+
+
+## Outputs 
+# Set the sleuth_object and sleuth_table to a named local var
+DC50so = so
+DC50st = sleuth_results(so, 'reduced:full', 'lrt', show_all = FALSE)
+
+# Write the sleuth_table to a .csv
+write.csv(DC50st, file = "./mono_sleuth_tables/DC50_sleuth-tab", row.names = FALSE)
+```
+
+```{r DC60, include=FALSE}
+## DC60 Inputs 
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/06")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/06",sample_id)
+
+# Construct a 'sample-to-covariate' table (I was calling this 'metadata' before)
+# Set count @ first extraction in sample_id = 1
+s2c = data.frame(
+  sample = sample_id,
+  condition = c(1,1,1,
+                4,4,4,
+                16,16,16),
+  path = as.character(kal_dirs),
+  stringsAsFactors = FALSE)
+
+# Generate the model based on the s2c$condition values, w/ degrees of freedom = lowest number of matrix dimensions
+design_matrix = model.matrix(formula(~ ns(s2c$condition, df=3)))
+
+
+## Model fitting
+# Prepare the sleuth object using the splines-based model
+so <- sleuth_prep(s2c, full_model = design_matrix)
+
+# Fit the full model, based on condition (day of RNA collection); and fit the reduced model w/o
+so <- sleuth_fit(so, ~condition, 'full')
+so <- sleuth_fit(so, formula = ~ 1, fit_name = "reduced")
+
+# Perform likelihood ratio test
+so <- sleuth_lrt(so, "reduced", "full")
+
+
+## Outputs 
+# Set the sleuth_object and sleuth_table to a named local var
+DC60so = so
+DC60st = sleuth_results(so, 'reduced:full', 'lrt', show_all = FALSE)
+
+# Write the sleuth_table to a .csv
+write.csv(DC60st, file = "./mono_sleuth_tables/DC60_sleuth-tab", row.names = FALSE)
+```
+
+```{r DC70, include=FALSE}
+## DC70 Inputs 
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/07")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/07",sample_id)
+
+# Construct a 'sample-to-covariate' table (I was calling this 'metadata' before)
+# Set count @ first extraction in sample_id = 1
+s2c = data.frame(
+  sample = sample_id,
+  condition = c(1,1,1,
+                11,11,11),
+  path = as.character(kal_dirs),
+  stringsAsFactors = FALSE)
+
+# Generate the model based on the s2c$condition values, w/ degrees of freedom = lowest number of matrix dimensions
+design_matrix = model.matrix(formula(~ ns(s2c$condition, df=2)))
+
+
+## Model fitting
+# Prepare the sleuth object using the splines-based model
+so <- sleuth_prep(s2c, full_model = design_matrix)
+
+# Fit the full model, based on condition (day of RNA collection); and fit the reduced model w/o
+so <- sleuth_fit(so, ~condition, 'full')
+so <- sleuth_fit(so, formula = ~ 1, fit_name = "reduced")
+
+# Perform likelihood ratio test
+so <- sleuth_lrt(so, "reduced", "full")
+
+
+## Outputs 
+# Set the sleuth_object and sleuth_table to a named local var
+DC70so = so
+DC70st = sleuth_results(so, 'reduced:full', 'lrt', show_all = FALSE)
+
+# Write the sleuth_table to a .csv
+write.csv(DC70st, file = "./mono_sleuth_tables/DC70_sleuth-tab", row.names = FALSE)
+```
+
+```{r DC80, include=FALSE}
+## DC80 Inputs 
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/08")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/08",sample_id)
+
+# Construct a 'sample-to-covariate' table (I was calling this 'metadata' before)
+# Set count @ first extraction in sample_id = 1
+s2c = data.frame(
+  sample = sample_id,
+  condition = c(1,1,1,
+                3,3,3,
+                10,10,10),
+  path = as.character(kal_dirs),
+  stringsAsFactors = FALSE)
+
+# Generate the model based on the s2c$condition values, w/ degrees of freedom = lowest number of matrix dimensions
+design_matrix = model.matrix(formula(~ ns(s2c$condition, df=3)))
+
+
+## Model fitting
+# Prepare the sleuth object using the splines-based model
+so <- sleuth_prep(s2c, full_model = design_matrix)
+
+# Fit the full model, based on condition (day of RNA collection); and fit the reduced model w/o
+so <- sleuth_fit(so, ~condition, 'full')
+so <- sleuth_fit(so, formula = ~ 1, fit_name = "reduced")
+
+# Perform likelihood ratio test
+so <- sleuth_lrt(so, "reduced", "full")
+
+
+## Outputs 
+# Set the sleuth_object and sleuth_table to a named local var
+DC80so = so
+DC80st = sleuth_results(so, 'reduced:full', 'lrt', show_all = FALSE)
+
+# Write the sleuth_table to a .csv
+write.csv(DC80st, file = "./mono_sleuth_tables/DC80_sleuth-tab", row.names = FALSE)
+```
+
+*Exploratory analysis*
+
+```{r}
+# How many significant results w/ q<0.1?
+table(DC10st[,"qval"] < 0.1)
+# table(DC20st[,"qval"] < 0.1)
+# table(DC30st[,"qval"] < 0.1)
+# table(DC40st[,"qval"] < 0.1)
+# table(DC50st[,"qval"] < 0.1)
+# table(DC60st[,"qval"] < 0.1)
+# table(DC70st[,"qval"] < 0.1)
+# table(DC80st[,"qval"] < 0.1)
+```
+
+A few different plots (from the vignette)
+
+```{r}
+# 1
+plot_qq(DC10so, test = 'reduced:full', test_type = 'lrt', sig_level = 0.1)
+```
+
+```{r}
+# 2
+lrt_results <- sleuth_results(so, 'reduced:full', test_type = 'lrt')
+table(lrt_results[,"qval"] < 0.1)
+```
+
+```{r}
+# 3
+plot_transcript_heatmap(so, head(lrt_results, n = 20)$target_id, 'tpm')
+```
+
+```{r}
+# 4
+library(ggplot2)
+tmp <- DC10so$obs_raw %>% dplyr::filter(target_id == 'NODE_788_length_5499_cov_347.191349_g462_i0')
+tmp <- dplyr::full_join(DC10so$sample_to_covariates, tmp, by = 'sample')
+tmp
+tmp <- transform(tmp, condition = as.numeric(condition))
+
+ggplot(tmp, aes(x=condition, y=tpm)) + geom_point(shape=1) + geom_smooth(method = loess)
+```

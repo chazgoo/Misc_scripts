@@ -1,0 +1,1082 @@
+---
+title: "Biculture Expression Data Extraction"
+output: html_notebook
+---
+
+Much like I did with my monoculutre data, here I'm extracting kallisto data for all repeats/timepoints in every biculture combination. Output .csv files of each, for use in further transformations/plotting. 
+
+```{r DC12}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture12", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+files
+
+DC12_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+dfnames
+
+DC12_dfList <- setNames(DC12_dfList, gsub(".tsv", "", dfnames))
+
+## IN CASE YOU REALLY NEED INDIVIDUAL DFs
+# list2env(dfList, envir=.GlobalEnv)
+
+## IN CASE YOU NEED TO APPEND ALL DFs
+# finaldf <- do.call(rbind, dfList)
+
+# TO RETRIEVE A DF
+# DC12_dfList[["name""]] # can index by column/row via adding [x,y]!
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC12_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC12_dfList)
+
+# Change first column into rownames
+DC12_expression <- data.frame(DC12_expression[,-1], row.names=DC12_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC12_expression) <- cols
+
+write.csv(DC12_expression, 'DC12_expression.csv')
+```
+
+```{r DC13}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture13", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC13_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC13_dfList <- setNames(DC13_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC13_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC13_dfList)
+
+# Change first column into rownames
+DC13_expression <- data.frame(DC13_expression[,-1], row.names=DC13_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC13_expression) <- cols
+
+write.csv(DC13_expression, 'DC13_expression.csv')
+```
+
+```{r DC14}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture14", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC14_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC14_dfList <- setNames(DC14_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC14_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC14_dfList)
+
+# Change first column into rownames
+DC14_expression <- data.frame(DC14_expression[,-1], row.names=DC14_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC14_expression) <- cols
+
+write.csv(DC14_expression, 'DC14_expression.csv')
+```
+
+```{r DC15}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture15", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC15_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC15_dfList <- setNames(DC15_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC15_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC15_dfList)
+
+# Change first column into rownames
+DC15_expression <- data.frame(DC15_expression[,-1], row.names=DC15_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC15_expression) <- cols
+
+write.csv(DC15_expression, 'DC15_expression.csv')
+```
+
+```{r DC16}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture16", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC16_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC16_dfList <- setNames(DC16_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC16_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC16_dfList)
+
+# Change first column into rownames
+DC16_expression <- data.frame(DC16_expression[,-1], row.names=DC16_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC16_expression) <- cols
+
+write.csv(DC16_expression, 'DC16_expression.csv')
+```
+
+```{r DC17}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture17", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC17_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC17_dfList <- setNames(DC17_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC17_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC17_dfList)
+
+# Change first column into rownames
+DC17_expression <- data.frame(DC17_expression[,-1], row.names=DC17_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC17_expression) <- cols
+
+write.csv(DC17_expression, 'DC17_expression.csv')
+```
+
+```{r DC18}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture18", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC18_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC18_dfList <- setNames(DC18_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC18_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC18_dfList)
+
+# Change first column into rownames
+DC18_expression <- data.frame(DC18_expression[,-1], row.names=DC18_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC18_expression) <- cols
+
+write.csv(DC18_expression, 'DC18_expression.csv')
+```
+
+```{r DC23}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture23", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC23_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC23_dfList <- setNames(DC23_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC23_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC23_dfList)
+
+# Change first column into rownames
+DC23_expression <- data.frame(DC23_expression[,-1], row.names=DC23_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC23_expression) <- cols
+
+write.csv(DC23_expression, 'DC23_expression.csv')
+```
+
+```{r DC24}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture24", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC24_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC24_dfList <- setNames(DC24_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC24_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC24_dfList)
+
+# Change first column into rownames
+DC24_expression <- data.frame(DC24_expression[,-1], row.names=DC24_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC24_expression) <- cols
+
+write.csv(DC24_expression, 'DC24_expression.csv')
+```
+
+```{r DC25}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture25", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC25_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC25_dfList <- setNames(DC25_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC25_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC25_dfList)
+
+# Change first column into rownames
+DC25_expression <- data.frame(DC25_expression[,-1], row.names=DC25_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC25_expression) <- cols
+
+write.csv(DC25_expression, 'DC25_expression.csv')
+```
+
+```{r DC26}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture26", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC26_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC26_dfList <- setNames(DC26_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC26_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC26_dfList)
+
+# Change first column into rownames
+DC26_expression <- data.frame(DC26_expression[,-1], row.names=DC26_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC26_expression) <- cols
+
+write.csv(DC26_expression, 'DC26_expression.csv')
+```
+
+```{r DC27}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture27", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC27_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC27_dfList <- setNames(DC27_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC27_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC27_dfList)
+
+# Change first column into rownames
+DC27_expression <- data.frame(DC27_expression[,-1], row.names=DC27_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC27_expression) <- cols
+
+write.csv(DC27_expression, 'DC27_expression.csv')
+```
+
+```{r DC28}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture28", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC28_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC28_dfList <- setNames(DC28_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC28_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC28_dfList)
+
+# Change first column into rownames
+DC28_expression <- data.frame(DC28_expression[,-1], row.names=DC28_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC28_expression) <- cols
+
+write.csv(DC28_expression, 'DC28_expression.csv')
+```
+
+```{r DC34}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture34", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC34_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC34_dfList <- setNames(DC34_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC34_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC34_dfList)
+
+# Change first column into rownames
+DC34_expression <- data.frame(DC34_expression[,-1], row.names=DC34_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC34_expression) <- cols
+
+write.csv(DC34_expression, 'DC34_expression.csv')
+```
+
+```{r DC35}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture35", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC35_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC35_dfList <- setNames(DC35_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC35_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC35_dfList)
+
+# Change first column into rownames
+DC35_expression <- data.frame(DC35_expression[,-1], row.names=DC35_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC35_expression) <- cols
+
+write.csv(DC35_expression, 'DC35_expression.csv')
+```
+
+```{r DC36}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture36", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC36_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC36_dfList <- setNames(DC36_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC36_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC36_dfList)
+
+# Change first column into rownames
+DC36_expression <- data.frame(DC36_expression[,-1], row.names=DC36_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC36_expression) <- cols
+
+write.csv(DC36_expression, 'DC36_expression.csv')
+```
+
+```{r DC37}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture37", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC37_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC37_dfList <- setNames(DC37_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC37_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC37_dfList)
+
+# Change first column into rownames
+DC37_expression <- data.frame(DC37_expression[,-1], row.names=DC37_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC37_expression) <- cols
+
+write.csv(DC37_expression, 'DC37_expression.csv')
+```
+
+```{r DC38}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture38", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC38_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC38_dfList <- setNames(DC38_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC38_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC38_dfList)
+
+# Change first column into rownames
+DC38_expression <- data.frame(DC38_expression[,-1], row.names=DC38_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC38_expression) <- cols
+
+write.csv(DC38_expression, 'DC38_expression.csv')
+```
+
+```{r DC45}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture45", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC45_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC45_dfList <- setNames(DC45_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC45_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC45_dfList)
+
+# Change first column into rownames
+DC45_expression <- data.frame(DC45_expression[,-1], row.names=DC45_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC45_expression) <- cols
+
+write.csv(DC45_expression, 'DC45_expression.csv')
+```
+
+```{r DC46}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture46", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC46_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC46_dfList <- setNames(DC46_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC46_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC46_dfList)
+
+# Change first column into rownames
+DC46_expression <- data.frame(DC46_expression[,-1], row.names=DC46_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC46_expression) <- cols
+
+write.csv(DC46_expression, 'DC46_expression.csv')
+```
+
+```{r DC47}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture47", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC47_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC47_dfList <- setNames(DC47_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC47_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC47_dfList)
+
+# Change first column into rownames
+DC47_expression <- data.frame(DC47_expression[,-1], row.names=DC47_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC47_expression) <- cols
+
+write.csv(DC47_expression, 'DC47_expression.csv')
+```
+
+```{r DC48}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture48", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC48_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC48_dfList <- setNames(DC48_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC48_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC48_dfList)
+
+# Change first column into rownames
+DC48_expression <- data.frame(DC48_expression[,-1], row.names=DC48_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC48_expression) <- cols
+
+write.csv(DC48_expression, 'DC48_expression.csv')
+```
+
+```{r DC56}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture56", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC56_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC56_dfList <- setNames(DC56_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC56_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC56_dfList)
+
+# Change first column into rownames
+DC56_expression <- data.frame(DC56_expression[,-1], row.names=DC56_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC56_expression) <- cols
+
+write.csv(DC56_expression, 'DC56_expression.csv')
+```
+
+```{r DC57}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture57", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC57_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC57_dfList <- setNames(DC57_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC57_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC57_dfList)
+
+# Change first column into rownames
+DC57_expression <- data.frame(DC57_expression[,-1], row.names=DC57_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC57_expression) <- cols
+
+write.csv(DC57_expression, 'DC57_expression.csv')
+```
+
+```{r DC58}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture58", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC58_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC58_dfList <- setNames(DC58_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC58_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC58_dfList)
+
+# Change first column into rownames
+DC58_expression <- data.frame(DC58_expression[,-1], row.names=DC58_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC58_expression) <- cols
+
+write.csv(DC58_expression, 'DC58_expression.csv')
+```
+
+```{r DC67}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture67", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC67_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC67_dfList <- setNames(DC67_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC67_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC67_dfList)
+
+# Change first column into rownames
+DC67_expression <- data.frame(DC67_expression[,-1], row.names=DC67_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC67_expression) <- cols
+
+write.csv(DC67_expression, 'DC67_expression.csv')
+```
+
+```{r DC68}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture68", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC68_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC68_dfList <- setNames(DC68_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC68_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC68_dfList)
+
+# Change first column into rownames
+DC68_expression <- data.frame(DC68_expression[,-1], row.names=DC68_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC68_expression) <- cols
+
+write.csv(DC68_expression, 'DC68_expression.csv')
+```
+
+```{r DC78}
+# READ IN ALL FILES AND SUBSET COLUMNS 1, 4, and 5 
+files <- dir("/home/twood1/Dimensions/Biculture78", 
+             recursive=TRUE, 
+             full.names=TRUE, 
+             pattern="\\.tsv$")
+
+DC78_dfList <- lapply(files, function(f) {  
+   read.table(f, sep = '\t', header = TRUE)[,c(1,4,5)]
+})
+
+# SET NAMES TO EACH DF ELEMENT
+# separate file names by "/", and pull/set the 6th field as the new df name. 
+dfnames <- sapply(strsplit(files, "/"), "[", 6)
+
+DC78_dfList <- setNames(DC78_dfList, gsub(".tsv", "", dfnames))
+
+# Obtain a table with est_counts and tpm from all dataframes
+# NOTE: Map1 and Map2 are both in THIS df - will need to subset to separate!
+DC78_expression <- Reduce(function(...) merge(..., by="target_id", all=TRUE), DC78_dfList)
+
+# Change first column into rownames
+DC78_expression <- data.frame(DC78_expression[,-1], row.names=DC78_expression[,1])
+
+# Change colnames to reflect source data
+cols <- c()
+
+for(i in 1:(length(dfnames))){
+  cols <- append(cols, paste(dfnames[i], ".ec", sep = ""))
+  cols <- append(cols, paste(dfnames[i], ".tpm", sep = ""))
+  }
+
+
+colnames(DC78_expression) <- cols
+
+write.csv(DC78_expression, 'DC78_expression.csv')
+```

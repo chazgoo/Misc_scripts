@@ -1,0 +1,157 @@
+---
+title: "Sleuth_exploring_pt-ii"
+author: Charles Goodman
+output: html_notebook
+---
+
+After trying both sleuth and DESeq2/tximport, I'm pretty sure sleuth is the way to go. 
+
+The initial run through sleuth went pretty well, and I've found [this](http://www.nxn.se/valent/timecourse-analysis-with-sleuth) vignette describing timecourse analysis - I'll test that workflow here.
+
+The first several steps are copied directly from pt-i:
+
+*Initialize packages*
+```{r include=FALSE}
+source("http://bioconductor.org/biocLite.R")
+# Only need to install these packages once... do this from sudo R session in terminal
+##biocLite("devtools")
+##biocLite("pachterlab/sleuth")
+##biocLite("rhdf5")
+##biocLite("shinyapp")
+
+library("dplyr")
+library("sleuth")
+library("rhdf5")
+library("devtools")
+library("shiny")
+```
+
+*Intros and manuals*
+```{r}
+vignette('intro', package = 'sleuth')
+help(package = 'sleuth')
+```
+
+Also see:
+
+[GitHub](https://github.com/pachterlab/sleuth)
+[Pachter Lab](https://pachterlab.github.io/sleuth/)
+
+*Getting kallisto data organized*
+```
+# 1. Copied kallisto data from ~/Dimensions/R_analyses/Monoculture_Expression_Data to ~/Dimensions/Monocultures (orig. intact!)
+scp -r ./Data/ /home/cagood/Dimensions/Monocultures/
+
+# 2. Renamed directory to mono_expr_data
+mv Data/ mono_expr_data
+
+# 3. Changed kallisto output directories from 'kallisto_t0_r1' etc. to 'DC10_t0_r1' etc... NOTE: do this for each species!
+rename 's/kallisto/DC10/' kallisto_*/
+
+# 4. Find and delete empty directories below current dir
+find . -type d -empty -print
+find . -type d -empty -delete
+
+# Now each monoculture has specifically-named kallisto output data.
+```
+
+*Read in data*
+```{r}
+# Set sample_id to hold a list of directories containing kallisto data of interest
+sample_id = dir("~/Dimensions/Monocultures/mono_expr_data/01")
+
+# Collate a list of paths to kallisto results directories using sample_id
+kal_dirs = file.path("~/Dimensions/Monocultures/mono_expr_data/01",sample_id)
+
+# Construct a 'sample-to-covariate' table (I was calling this 'metadata' before)
+# NOTE: 'condition' refers to actual experiment day after 1, from DIMENSIONS_CompetitionMaster.xls
+s2c = data.frame(
+  sample = sample_id,
+  condition = c(1,1,1,
+                9,9,9,
+                19,19,19),
+  path = as.character(kal_dirs),
+  stringsAsFactors = FALSE)
+
+# holdover from pt-i
+# metadata = data.frame(lapply(metadata, as.character), stringsAsFactors = FALSE) 
+```
+
+Here's where we differ: instead of running a 'treatment vs. control' experiment, rather we seek genes whose level increase or decrease with the time points. This means finding correlation with time points and boils down to linear regression of expression with time points. Explanation from the vignette:
+
+
+****
+
+*In a linear modelling framework, such as Sleuth, a common solution for this is to use natural splines. Given a number of degrees of freedom for a natural spline model, knots will be placed along the quantiles of the observations of the time axis, which will define basis polynomials with local support.*
+
+> Expression∼β0+∑i=13βiBi(Timepoint)+ε
+
+*The idea is now to compare the model of a genes expression which includes the polynomial terms, with a model that only includes the noise term.*
+
+> Expression∼β0+ε
+
+****
+
+
+So to pass the spline-based model to sleuth, we first need to...
+
+*Make a design matrix*
+```{r}
+# Load the splines library
+library(splines)
+
+# Generate the model based on the s2c$condition values w/ degrees of freedom = the number of conditions
+design_matrix = model.matrix(formula(~ ns(s2c$condition, df=3)))
+```
+
+*Build the sleuth object and perform the analysis*
+```{r}
+# Prepare the sleuth object using the splines-based model
+so <- sleuth_prep(s2c, full_model = design_matrix)
+
+# Fit the full model, based on condition (day of RNA collection); and fit the reduced model w/o
+so <- sleuth_fit(so, ~condition, 'full')
+so <- sleuth_fit(so, formula = ~ 1, fit_name = "reduced")
+
+# Perform likelihood ratio test
+so <- sleuth_lrt(so, "reduced", "full")
+
+# Print the model coefficients
+models(so)
+
+# Output the results table and subset qvals less than 0.05
+sleuth_table <- sleuth_results(so, 'reduced:full', 'lrt', show_all = FALSE) # show_all = TRUE will include ALL assembled contigs
+sleuth_significant <- dplyr::filter(sleuth_table, qval <= 0.05)
+
+head(sleuth_significant)
+```
+
+```{r}
+# A few different plots (from the vignette)
+# 1
+plot_qq(so, test = 'reduced:full', test_type = 'lrt', sig_level = 0.05)
+
+# 2
+lrt_results <- sleuth_results(so, 'reduced:full', test_type = 'lrt')
+table(lrt_results[,"qval"] < 0.05)
+
+# 3
+plot_transcript_heatmap(so, head(lrt_results, n = 25)$target_id, 'est_counts')
+```
+
+```{r}
+# 4
+library(ggplot2)
+tmp <- so$obs_raw %>% dplyr::filter(target_id == 'NODE_32485_length_477_cov_9873.094470_g18342_i0')
+tmp <- dplyr::full_join(so$sample_to_covariates, tmp, by = 'sample')
+tmp
+tmp <- transform(tmp, condition = as.numeric(condition))
+
+ggplot(tmp, aes(x=condition, y=est_counts)) + geom_point(shape=1) + geom_smooth(method = loess)
+```
+
+Cool! Is there a way to sort by genes that are highest in the central timepoint?
+
+Important to note: it's highly likely that the green/nongreen distinction falls apart here. The kallisto data were generated on the entire dataset, and there's no way to subset that meaningfully. What I'll need to do is map these results back to my rosetta tables to determine which are reasonably assumed green, and which aren't. 
+
+Beyond that, I'll repeat this analysis for the remaining monocultures, and then put some time into producing meaningful figures. It would be interesting to determine which common orthogroups show up in the 'differentially expressed' set of transcripts, and to see whether the same ones are DE in all monocultures.  

@@ -1,0 +1,127 @@
+---
+title: "Exploring timecourse data"
+output: html_notebook
+date: 4/8/2019
+---
+
+Even though pairwise tests allow for higher resolution between timepoints, what gets overlooked is the potential to observe DE resulting directly from crowding over time. That is, we may indeed be interested in looking at things across the entire experiment, rather than just between timepoints. I may well want to use both types of analysis. Which is why I'm exploring it here. 
+
+First, I want to read in the codex tables and just check what we have for significance over time. 
+
+```{r}
+#Loop through list of species, read in and format files, output codexes. 
+
+species = c("DC10","DC20","DC30","DC40","DC50","DC60","DC70","DC80")
+
+for (i in 1:8){
+  name = species[i]
+  
+  path = paste0("/home/cagood/Dimensions/R_analyses/Monoculture_DE_analysis/DE_codex_tables/",species[i],"_DE_Codex")
+  codex = read.csv(file = path)
+  
+  codex$X = NULL
+  codex = codex[complete.cases(codex$BlastID),] #Strip all rows where BlastID is NA; removes 'nongreen' rows
+  codex = codex[complete.cases(codex$sleuth.timecourse_qval),] #Strip all rows where sleuth.timecourse_qval is NA
+  
+  out = codex
+  assign(name, out)
+}
+
+out = NULL
+codex = NULL
+```
+
+```{r}
+#Quick look to see counts of significant DE across the full timecourse
+
+table(DC10[,"sleuth.timecourse_qval"] < 0.1)
+table(DC20[,"sleuth.timecourse_qval"] < 0.1)
+table(DC30[,"sleuth.timecourse_qval"] < 0.1)
+table(DC40[,"sleuth.timecourse_qval"] < 0.1)
+table(DC50[,"sleuth.timecourse_qval"] < 0.1)
+table(DC60[,"sleuth.timecourse_qval"] < 0.1)
+table(DC70[,"sleuth.timecourse_qval"] < 0.1)
+table(DC80[,"sleuth.timecourse_qval"] < 0.1)
+```
+
+```{r}
+#Do the same quick look, for only common OrthoGroups
+
+OGr_list = "/home/cagood/Dimensions/OrthoFinder/2nd_run/analysis/commonOGs.txt"
+commonOGs = read.table(OGr_list, header=T)
+
+DC10cmmn = merge(x = DC10, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+DC20cmmn = merge(x = DC20, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+DC30cmmn = merge(x = DC30, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+DC40cmmn = merge(x = DC40, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+DC50cmmn = merge(x = DC50, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+DC60cmmn = merge(x = DC60, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+DC70cmmn = merge(x = DC70, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+DC80cmmn = merge(x = DC80, y = commonOGs, by.x = "OG", by.y = "x", all.y = T)
+
+table(DC10cmmn[,"sleuth.timecourse_qval"] < 0.1)
+table(DC20cmmn[,"sleuth.timecourse_qval"] < 0.1)
+table(DC30cmmn[,"sleuth.timecourse_qval"] < 0.1)
+table(DC40cmmn[,"sleuth.timecourse_qval"] < 0.1)
+table(DC50cmmn[,"sleuth.timecourse_qval"] < 0.1)
+table(DC60cmmn[,"sleuth.timecourse_qval"] < 0.1)
+table(DC70cmmn[,"sleuth.timecourse_qval"] < 0.1)
+table(DC80cmmn[,"sleuth.timecourse_qval"] < 0.1)
+```
+
+```{r}
+
+library(dplyr)
+library(pheatmap)
+
+#Staring to play with clustering?
+
+#Subset and format DC10cmmn to DC10cmmn_loQ
+DC10cmmn_loQ = DC10cmmn[(DC10cmmn$sleuth.timecourse_qval < 0.1),] #to include only significant rows
+
+DC10cmmn_loQ = DC10cmmn_loQ %>%
+  select(ID, meanTPM_T0, meanTPM_T3, meanTPM_T5, meanTPM_T6) #to include these columns
+
+DC10cmmn_loQ = DC10cmmn_loQ[complete.cases(DC10cmmn_loQ$ID),] #to exclude NA rows (that I'm not sure of their origin...)
+
+rownames(DC10cmmn_loQ) <- DC10cmmn_loQ[,1] #Assign ID as rownames
+DC10cmmn_loQ[,1] <- NULL
+
+cols <- c("meanTPM_T0", "meanTPM_T3", "meanTPM_T5", "meanTPM_T6") #Get log values
+DC10cmmn_loQ[cols] <- log2(DC10cmmn_loQ[cols])
+
+DC10cmmn_loQ[DC10cmmn_loQ == -Inf] <- 0
+
+#pheatmap
+D1 = pheatmap(DC10cmmn_loQ, clustering_method = "complete", legend = FALSE)
+D1
+```
+
+```{r}
+pdf("test.pdf",width=10,height=100)
+D1
+dev.off()
+```
+
+```{r}
+#Subset and format DC10cmmn to DC10cmmn_loQ
+DC10cmmn_loQ = DC10cmmn[(DC10cmmn$sleuth.timecourse_qval < 0.1),] #to include only significant rows
+
+DC10cmmn_loQ = DC10cmmn_loQ %>%
+  select(ID, tp1_LR, tp2_LR, tp3_LR) #to include these columns
+
+DC10cmmn_loQ = DC10cmmn_loQ[complete.cases(DC10cmmn_loQ$ID),] #to exclude NA rows (that I'm not sure of their origin...)
+
+rownames(DC10cmmn_loQ) <- DC10cmmn_loQ[,1] #Assign ID as rownames
+DC10cmmn_loQ[,1] <- NULL
+
+row_sub = apply(DC10cmmn_loQ, 1, function(row) all(row !=Inf)) #Remove -Inf and  Inf, which indicates zero values in num or denom when LR was calculated
+DC10cmmn_loQ = DC10cmmn_loQ[row_sub,]
+
+row_sub = apply(DC10cmmn_loQ, 1, function(row) all(row !=-Inf))
+DC10cmmn_loQ = DC10cmmn_loQ[row_sub,]
+
+D2 = pheatmap(DC10cmmn_loQ, clustering_method = "complete", legend = FALSE)
+D2
+```
+

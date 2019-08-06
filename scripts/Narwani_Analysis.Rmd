@@ -1,0 +1,12 @@
+---
+title: "Narwani Analysis"
+output: html_notebook
+---
+
+This project will involve my trying to understand and rerun the exact pipeline used by the original group to fit the Lotka-Volterra interaction model. 
+
+```{r}
+
+```
+
+
