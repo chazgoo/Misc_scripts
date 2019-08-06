@@ -1,0 +1,9 @@
+#!/bin/bash  
+
+# Individual clustalo calls for each of the 6 fasta files. 
+sudo nohup clustalo -i ~/UPM_collab/ATP_sulph/gene_fastas_final/APSK.fa -o ~/UPM_collab/ATP_sulph/clustalo_out/APSK_final_msa -v &
+sudo nohup clustalo -i ~/UPM_collab/ATP_sulph/gene_fastas_final/APSR.fa -o ~/UPM_collab/ATP_sulph/clustalo_out/APSR_final_msa -v &
+sudo nohup clustalo -i ~/UPM_collab/ATP_sulph/gene_fastas_final/ATPS.fa -o ~/UPM_collab/ATP_sulph/clustalo_out/ATPS_final_msa -v &
+sudo nohup clustalo -i ~/UPM_collab/ATP_sulph/gene_fastas_final/OAS.fa -o ~/UPM_collab/ATP_sulph/clustalo_out/OAS_final_msa -v &
+sudo nohup clustalo -i ~/UPM_collab/ATP_sulph/gene_fastas_final/SAT.fa -o ~/UPM_collab/ATP_sulph/clustalo_out/SAT_final_msa -v &
+sudo nohup clustalo -i ~/UPM_collab/ATP_sulph/gene_fastas_final/SIR.fa -o ~/UPM_collab/ATP_sulph/clustalo_out/SIR_final_msa -v &
