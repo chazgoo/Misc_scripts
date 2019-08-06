@@ -42,7 +42,6 @@ KILL -CONT [pid]
 
 # Count number of lines in a file 
 wc -l file.txt
-```
 
 #Pull the top hits from a BLAST output file
 awk '!seen[$1]++' Blastx_DC10_ref.out > DC10_TopHits
