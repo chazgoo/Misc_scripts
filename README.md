@@ -68,7 +68,7 @@ perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ids.file fas
 
 [Rosettamaker.sh](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Rosetta_maker.sh) - Serial calls of PyRosetta.py via shell script.  
 
-[Fasta2Phylip.pl](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Fasta2Phylip.pl) - Convert fasta format to phylip format.  
+[Fasta2Phylip.pl](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Fasta2Phylip.pl) - Convert fasta format to phylip format. Credit to [Yu Wei](http://yuweibioinfo.blogspot.com/2009/01/fasta-to-phylip-converter.html). 
 
 ### Python
 
@@ -94,9 +94,20 @@ perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ids.file fas
 
 [Common_Orthogroups.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Common_Orthogroups.Rmd) - Identifying and outputting common gene orthogroups detected with OrthoFinder, from my DIMENSIONS analysis.  
 
-[DEseq2_exploring_pt-i.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/DEseq2_exploring_pt-i.Rmd) - Differential gene expression analysis via DESeq2, exploring, part 1 of 3. Parts 2 and 3 can be found in [here](https://github.com/chazgoo/Misc_scripts/tree/master/scripts).  
+[DEseq2_exploring_pt-i.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/DEseq2_exploring_pt-i.Rmd) - Differential gene expression analysis via DESeq2, exploring, part 1 of 3. [Part 2](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/DEseq2_exploring_pt-ii.Rmd). [Part 3](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/DEseq2_exploring_pt-iii.Rmd).
 
 [DEseq2_pairwise-timepoints.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/DEseq2_pairwise-timepoints.Rmd) - Continued exploration with DESeq2. For timecourse expression analysis, individual tests for consecutive pairs of timepoints, rather than generating a single model for all timepoints.  
+
+[LDEs.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/LDEs.Rmd) - Calculating "Log Difference in Expression" of biculture data in the DIMENSIONS analysis. Ultimately decided to use log ratios of expression, but keeping this here for posterity. 
+
+[Mono_exp_data.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Mono_exp_data.Rmd) - In the DIMENSIONS pipeline: Assembly (RNAspades) -> Annotation -> Read-mapping/quantification (Kallisto) -> DE analysis (Sleuth). This script is used to consolidate multiple timepoibnts of expression data into a single table for each species. 
+
+[Mono_Rosettas_exploring.sleuth.analysis.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Mono_Rosettas_exploring.sleuth.analysis.Rmd) - In the DIMENSIONS pipeline: Assembly (RNAspades) -> Annotation -> Read-mapping/quantification (Kallisto) -> DE analysis (Sleuth). Here, I'm playing with sleuth output data, basic plots. 
+
+[Mono_growth_curves.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Mono_growth_curves.Rmd) - Plotting logistic growth curves for DIMENSIONS monocultures
+
+[Redundancies.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Redundancies.Rmd) - Testing the effect of removing redundant or repeated transcripts from the dataset. 
+
 
 
 
