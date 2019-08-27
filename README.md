@@ -84,17 +84,11 @@ perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ids.file fas
 
 * Kallisto - Credit to [Lior Pachter et al.](https://pachterlab.github.io/kallisto/), this algorithm is a method of quantifying gene expression with RNAseq data. Comparable to RSEM, edgeR, limma, Salmon, etc... This one is new, fast, and bootstrappable; used extensively in my transcriptomics pipelines. A [kludgy](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallisto_monos.sh) copypasta version, and a more elegant [loop](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallistorunner.sh) version. Both are tailored to my specific name schema, but the latter is easily adjusted for other datasets, as seen [here](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/UB_kallisto.sh).
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/pep_cleaner.sh)
+* [pep_cleaner.sh](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/pep_cleaner.sh) - A series of awk calls I used to modify the output headers from TransDecoder. Another version [here](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/pep_cleaner2.sh). These might be useful for review if trying to remember how to use awk, but were otherwise written to be wildly specific to my needs. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/pep_cleaner2.sh)
+* [seqtk.sh](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/seqtk.sh) - I wanted to see how coverage affected transcriptome completeness. I used [seqtk](https://github.com/lh3/seqtk) to randomly sample paired-end reads from the total dataset. The random subsets (10%, 20%, ...100% of reads) were then assembled with [RNAspades](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/subset_spades.sh). This was pretty cool, and worked better than expected. The program itself has a number of useful tools for parsing/processing fasta and fastq data. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/seqtk.sh)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/subset_spades.sh)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/sort_green_fasta.sh)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/sort_nongreen_fasta.sh)
+* [Sorting by ID](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/sort_green_fasta.sh) - here I used an awk line to pull fasta headers, and sorted them with a perl line based on whether the ID showed up in a list. [Here](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/sort_nongreen_fasta.sh) is an alternate implementation. 
 
 ### Python
 
