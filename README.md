@@ -37,7 +37,7 @@ awk -F '[| ]' '/^>/ { print $2}' < green.fasta > green_IDs.txt
 awk -F '[| ]' '/^>/ { print $3}' < green.fasta > green_accessions.txt
 ```
 
-Some commands I used to follow progress of BLAST jobs
+* Some commands I used to follow progress of BLAST jobs
 ```
 # Show number of unique headers in a fasta file 
 grep -c '^>' DC10_transcripts.fasta  
@@ -56,7 +56,7 @@ grep ">" file.fa | wc -l
 awk '!seen[$1]++' Blastx_DC10_ref.out > DC10_TopHits
 ```
 
-Working with fasta and TSV files
+* Working with fasta and TSV files
 ```
 # Convert standard multi-line fasta to linearized single-line fasta: 
 awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' < file.fas | tail -n +2 > out.fasta  
