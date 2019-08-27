@@ -2,7 +2,7 @@
 
 ### [Full list](https://github.com/chazgoo/Misc_scripts/tree/master/scripts)
 
-A collection of selected bash, awk/sed, perl, python, and R scripts I've used in various bioinformatic processes and pipelines. A number of these are used in my other (better organized, but privately held until published) repositories. I wanted a place to allow free access to my code without compromising any of my proprietary research in progress. Here it is. Oneliners will be displayed, longer scripts will be linked. 
+A collection of selected bash, awk/sed, perl, python, and R scripts I've used in various bioinformatic processes and pipelines. A number of these are used in my other (better organized, but privately held until published) repositories. I wanted a place to allow free access to my code without compromising any of my proprietary research in progress. Here it is. Oneliners will be displayed, longer scripts and workflows will be linked. 
 
 ### BASH/AWK/SED/PERL
 
@@ -70,39 +70,39 @@ perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ids.file fas
 
 [Rosettamaker.sh](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Rosetta_maker.sh) - Serial calls of PyRosetta.py via shell script.  
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_RosettaMaker.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_RosettaMaker.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/TrDec_%26_HMMER.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/TrDec_%26_HMMER.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/TrDec_predict.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/TrDec_predict.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/UB_kallisto.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/UB_kallisto.sh)
 
 [Fasta2Phylip.pl](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Fasta2Phylip.pl) - Convert fasta format to phylip format. Credit to [Yu Wei](http://yuweibioinfo.blogspot.com/2009/01/fasta-to-phylip-converter.html). 
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/bbduk_cleaner.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/bbduk_cleaner.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/clustalos
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/clustalos)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/count_fasta.pl
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/count_fasta.pl)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/fasta_oneline.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/fasta_oneline.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallisto_monos.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallisto_monos.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallistorunner.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallistorunner.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/pep_cleaner.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/pep_cleaner.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/pep_cleaner2.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/pep_cleaner2.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/seqtk.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/seqtk.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/subset_spades.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/subset_spades.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/sort_green_fasta.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/sort_green_fasta.sh)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/sort_nongreen_fasta.sh
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/sort_nongreen_fasta.sh)
 
 ### Python
 
@@ -142,49 +142,49 @@ https://github.com/chazgoo/Misc_scripts/blob/master/scripts/sort_nongreen_fasta.
 
 [Redundancies.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Redundancies.Rmd) - Testing the effect of removing redundant or repeated transcripts from the dataset. 
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_exploring.rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_exploring.rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_exploring_monos.pairwise.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_exploring_monos.pairwise.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_exploring_pt-ii.rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_exploring_pt-ii.rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_monos.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_monos.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_DC10_DE.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_DC10_DE.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_PyRos_Cleanup.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_PyRos_Cleanup.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_timecourse_analyses.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_timecourse_analyses.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt1.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt1.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt2.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt2.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt3.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt3.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/aa_over_time_pt.i.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/aa_over_time_pt.i.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/aa_over_time_pt.ii.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/aa_over_time_pt.ii.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/final_aa_over_time.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/final_aa_over_time.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/allGenes_Venns.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/allGenes_Venns.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/commonOG_Venns.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/commonOG_Venns.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/baseRsubsetting.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/baseRsubsetting.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/commonOG_volcanos.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/commonOG_volcanos.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/contam.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/contam.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/exploring_timecourse_data.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/exploring_timecourse_data.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/loop_in_and_multiplot.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/loop_in_and_multiplot.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/stringentRefTs.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/stringentRefTs.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/timecourse_monos.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/timecourse_monos.Rmd)
 
-https://github.com/chazgoo/Misc_scripts/blob/master/scripts/upsets.Rmd
+[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/upsets.Rmd)
 
