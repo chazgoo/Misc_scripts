@@ -74,19 +74,15 @@ perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ids.file fas
 
 * [Fasta2Phylip.pl](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Fasta2Phylip.pl) - Convert fasta format to phylip format. Credit to [Yu Wei](http://yuweibioinfo.blogspot.com/2009/01/fasta-to-phylip-converter.html). 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/bbduk_cleaner.sh)
+* [bbduk_cleaner.sh](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/bbduk_cleaner.sh) - Scripted use of bbduk, a trimming tool within the [bbmap](https://sourceforge.net/projects/bbmap/) suite. Here I trimmed raw paired-end reads of low quality and artefact adapter sequence. Implementation is specific to the namimg schema for my project, but the idea is sound. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/clustalos)
+* [clustalos](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/clustalos) - Scripted terminal-operation of [clustal omega](http://www.clustal.org/omega/), a multiple sequence alignment algorithm.
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/count_fasta.pl)
+* [count_fasta.pl](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/count_fasta.pl) - Credit to Joseph Fass & Brad Sickler. Calculate N25/50/75 of assembly data in fasta format. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/fasta_oneline.sh)
+* [fasta_oneline.sh](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/fasta_oneline.sh) - Copypasta serial runs of an awk line to linearize a series of fasta files. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallisto_monos.sh)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallistorunner.sh)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/UB_kallisto.sh)
+* Kallisto operation - Credit to [Lior Pachter et al.](https://pachterlab.github.io/kallisto/), this algorithm is a method of quantifying gene expression with RNAseq data. Comparable to RSEM, edgeR, limma, Salmon, etc... This one is new, fast, and bootstrappable; used extensively in my transcriptomics pipelines. A [kludgy](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallisto_monos.sh)copypasta version, and a more elegant [loop](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/kallistorunner.sh) version. Both are prtty tailored to my specific name schema, but the latter is easily adjusted for other datasets, as seen [here](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/UB_kallisto.sh).
 
 [](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/pep_cleaner.sh)
 
