@@ -116,57 +116,50 @@ perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ids.file fas
 
 * [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) - Software for differential gene expression analysis, credit to Love, Anders, and Huber. This program takes quant data from Kallisto (or other read-mapping software) via [tximport](http://bioconductor.org/packages/release/bioc/html/tximport.html), estimates variance-mean dependence in count data from high-throughput sequencing assays, and tests for differential expression based on a model using the negative binomial distribution. Comparable to the kallisto-specific sleuth. I performed a series of exploratory tests on my data: [Part 1](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/DEseq2_exploring_pt-i.Rmd), [Part 2](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/DEseq2_exploring_pt-ii.Rmd), [Part 3](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/DEseq2_exploring_pt-iii.Rmd). My data are a time series (4 timepoints), and here I've treated time as a continuous variable, estimating a single model for the entire timecourse. I also wanted to test consecutive pairs of timepoints, in more of a control/test structure - where each pair of timepoints has an associated model. That effort can be seen [here](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/DEseq2_pairwise-timepoints.Rmd). 
 
-[LDEs.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/LDEs.Rmd) - Calculating "Log Difference in Expression" of biculture data in the DIMENSIONS analysis. Ultimately decided to use log ratios of expression, but keeping this here for posterity. 
-
-[Mono_exp_data.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Mono_exp_data.Rmd) - In the DIMENSIONS pipeline: Assembly (RNAspades) -> Annotation -> Read-mapping/quantification (Kallisto) -> DE analysis (Sleuth). This script is used to consolidate multiple timepoints of expression data into a single table for each species. 
-
-[Mono_growth_curves.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Mono_growth_curves.Rmd) - Plotting logistic growth curves for DIMENSIONS monocultures with [GrowthCurver](https://cran.r-project.org/web/packages/growthcurver/vignettes/Growthcurver-vignette.html)
-
-[Redundancies.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Redundancies.Rmd) - Testing the effect of removing redundant or repeated transcripts from the dataset. 
-
 * [Sleuth](https://github.com/pachterlab/sleuth) - Credit to Lior Pachter et al. Sleuth is an alternative to DESeq2, for determining significance in DE analysis. Specifically built for Kallisto output, and able to leverage Kallisto's bootstrap data in estimating FELV models. In contrast to DESeq2's negative binomial dist, Kallisto estimates a linear model.
   - [Exploring](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_exploring.rmd), T1 vs T3 comparison
   - [Exploring pt 2](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_exploring_pt-ii.rmd), full timecourse model, using day-of-sequencing as parameter
   - [Pairwise timepoints](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_exploring_monos.pairwise.Rmd), rather than a single model for all timepoints, generating a model for each consecutive pair of timepoints
   - [All monocultures](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Sleuth_monos.Rmd), analyses of all 8 monocultures, rather than a single example
-  - [Final Timecourse](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_timecourse_analyses.Rmd), generating a timecourse model for each monoculture
+  - [Final Timecourse](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/timecourse_monos.Rmd), generating a timecourse model for each monoculture
   - [Final pairwise](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_DC10_DE.Rmd), how I approached analyses, with DC10 as an example. The other species are available in the DIMENSIONS repository (currently private
   - [Mono_Rosettas_exploring.sleuth.analysis.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Mono_Rosettas_exploring.sleuth.analysis.Rmd), here, I'm playing with sleuth output data, basic plots. 
+  - [exploring_timecourse_data.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/exploring_timecourse_data.Rmd)
 
+* [LDEs.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/LDEs.Rmd) - Calculating "Log Difference in Expression" of biculture data in the DIMENSIONS analysis. Ultimately decided to use log ratios of expression, but keeping this here for posterity. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_PyRos_Cleanup.Rmd)
+* [Mono_exp_data.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Mono_exp_data.Rmd) - In the DIMENSIONS pipeline: Assembly (RNAspades) -> Annotation -> Read-mapping/quantification (Kallisto) -> DE analysis (Sleuth). This script is used to consolidate multiple timepoints of expression data into a single table for each species. 
 
+* [Mono_growth_curves.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Mono_growth_curves.Rmd) - Plotting logistic growth curves for DIMENSIONS monocultures with [GrowthCurver](https://cran.r-project.org/web/packages/growthcurver/vignettes/Growthcurver-vignette.html)
 
+* [Redundancies.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Redundancies.Rmd) - Testing the effect of removing redundant or repeated transcripts from the dataset. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt1.Rmd)
+* [Stringent_PyRos_Cleanup.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_PyRos_Cleanup.Rmd) - Removing NA rows from summary tables. This could have been done in any number of ways. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt2.Rmd)
+* [WGCNA](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/) - Playing with "Weighted Gene Cluster Network Analysis", unsupervised machine learning/clustering of gene coexpression networks. The dataset I have on hand isn't quite appropriate for this technique (too few repeats), but it was an interesting exercise. 
+  - [Part 1](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt1.Rmd)
+  - [Part 2](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt2.Rmd)
+  - [Part 3](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt3.Rmd)
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/WGCNA_myData_pt3.Rmd)
+* Amino acid usage over time - Less interesting than I'd hoped, but still useful
+  - [Part 1](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/aa_over_time_pt.i.Rmd)
+  - [Part 2](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/aa_over_time_pt.ii.Rmd)
+  - [Part 3](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/final_aa_over_time.Rmd)
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/aa_over_time_pt.i.Rmd)
+* Venn Diagrams - using the aptly-named [VennDiagram](https://cran.r-project.org/web/packages/VennDiagram/index.html)
+  - [all genes](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/allGenes_Venns.Rmd)
+  - [common orthogroups](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/commonOG_Venns.Rmd)
+  
+* [Upset plots](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/upsets.Rmd) - for when Venn diagrams are too unweildy - i.e. more than 4 groups. Works really nicely!
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/aa_over_time_pt.ii.Rmd)
+* [Subsetting](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/baseRsubsetting.Rmd) in base R
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/final_aa_over_time.Rmd)
+* [Volcano plots](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/commonOG_volcanos.Rmd) representing differential gene expression across pairs of time points
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/allGenes_Venns.Rmd)
+* [Contamination](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/contam.Rmd) - looking at GC content in assembly data to determine whether multiple species are present
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/commonOG_Venns.Rmd)
+* [loop_in_and_multiplot.Rmd](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/loop_in_and_multiplot.Rmd) - very useful method of using a loop to read in multiple files of the same type. Multiplot allows multiple plots to be displayed in a single output. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/baseRsubsetting.Rmd)
+* [Filtering reference transcriptomes](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/stringentRefTs.Rmd) - applying various filters to my Rosetta tables. 
 
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/commonOG_volcanos.Rmd)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/contam.Rmd)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/exploring_timecourse_data.Rmd)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/loop_in_and_multiplot.Rmd)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/stringentRefTs.Rmd)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/timecourse_monos.Rmd)
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/upsets.Rmd)
 
