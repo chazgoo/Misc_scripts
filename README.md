@@ -68,9 +68,7 @@ awk '{print $1}' *.txt > collapsed_output.txt
 perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ids.file fasta.file
 ```
 
-[Rosettamaker.sh](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Rosetta_maker.sh) - Serial calls of PyRosetta.py via shell script.  
-
-[](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_RosettaMaker.sh)
+[Rosettamaker.sh](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Rosetta_maker.sh) - Serial calls of PyRosetta.py (below) via shell script. My "Rosetta" tables are basically large dataframes which link key data from all steps of my differential expression analysis pipeline. [Here,](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_RosettaMaker.sh) see similar implimentation on a stringently filtered dataset. 
 
 [](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/TrDec_%26_HMMER.sh)
 
