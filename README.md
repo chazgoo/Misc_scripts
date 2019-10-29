@@ -69,6 +69,9 @@ perl -ne 'if(/^>(\S+)/){$c=$i{$1}}$c?print:chomp;$i{$_}=1 if @ARGV' ids.file fas
 
 # Break fasta into n-sized chunks
 awk 'BEGIN {n_seq=0;} /^>/ {if(n_seq%1000==0){file=sprintf("myseq%d.fa",n_seq);} print >> file; n_seq++; next;} { print >> file; }' < sequences.fa
+
+# Extract first n sequences
+awk "/^>/ {n++} n>$NSEQS {exit} {print}" file.fasta
 ```
 
 * [Rosettamaker.sh](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Rosetta_maker.sh) - Serial calls of PyRosetta.py (below) via shell script. My "Rosetta" tables are basically large dataframes which link key data from all steps of my differential expression analysis pipeline. [Here,](https://github.com/chazgoo/Misc_scripts/blob/master/scripts/Stringent_RosettaMaker.sh) see similar implimentation on a stringently filtered dataset. 
